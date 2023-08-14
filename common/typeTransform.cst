@@ -1,0 +1,10 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Description="类型转换" %>
+<%@ Map Name="DbTypeToJavaScript" Src="DbType-JavaScript.csmap" %>
+
+<script runat="template">
+// DbType类型 转换 js类型
+public string DbTypeToJsType(DbType dbType)
+{
+    return DbTypeToJavaScript[dbType.ToString()];
+}
+</script>

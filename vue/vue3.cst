@@ -2,6 +2,7 @@
 <%@ Assembly Name="SchemaExplorer" %>
 <%@ Import Namespace="SchemaExplorer" %>
 
+
 <%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="所基于的表" %>
 
 <!-- #include file="..\\common\\utils.cst" -->
@@ -11,15 +12,16 @@
         <p><%= SnakeFormatHump(SourceTable.Name) %></p>
         <h2>表描述:</h2>
         <p><%= SourceTable.Description %></p>
-        <h2>表字段:</h2>
-        <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
-        <p>字段名: <%= SourceTable.Columns[i].Name %> - 字段类型: <%= SourceTable.Columns[i].NativeType %> 字段描述: <%= SourceTable.Columns[i].Description %></p>
-        <% } %>
     </div>
 </template>
 
 <script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>">
-// 
+/**
+ * @typedef <%= SnakeFormatHump(SourceTable.Name, true) %> - <%= SourceTable.Description %>
+ <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+ * @property {<%= DbTypeToJsType(SourceTable.Columns[i].DataType) %>} <%= SourceTable.Columns[i].Name %> - <%= SourceTable.Columns[i].Description %>
+ <% } %>
+ */
 </script>
 
 <style scoped lang="scss"></style>

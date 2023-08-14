@@ -3,6 +3,7 @@
 <%@ Import Namespace="SchemaExplorer" %>
 <%@ Import Namespace="System.IO" %>
 <%@ Import Namespace="System.Text" %>
+<%@ Map Name="DbTypeToJavaScript" Src="DbType-JavaScript.csmap" %>
 
 <script runat="template">
 // 蛇形命名转换大小驼峰命名处理
@@ -20,6 +21,12 @@ public string SnakeFormatHump(string snakeName, bool isBig = false)
         newSnakeName += snakeNames[i];
     }
     return newSnakeName;
+}
+
+// DbType类型 转换 js类型
+public string DbTypeToJsType(DbType dbType)
+{
+    return DbTypeToJavaScript[dbType.ToString()];
 }
 
 // 获取模版

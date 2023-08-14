@@ -1,0 +1,60 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Description="入口文件" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+<%@ Property Name="Tables" Type="SchemaExplorer.TableSchemaCollection" Category="Context" Optional="False" Description="要生成代码的表集合" %>
+<%@ Property Name="RootNameSpace" Type="System.String" Default="xxx项目" Optional="False" Category="General" Description="项目名称" %>
+
+<!-- #include file="common\\utils.cst" -->
+
+项目名称：<%= RootNameSpace %>
+
+<%
+/* 生成目录 & 模板获取 */
+// vue3
+string vue3Directory = OutputDirectory + "\\" + RootNameSpace + "vue3\\";
+CodeTemplate vue3Template = GetCodeTemplate("\\vue\\vue3.cst");
+
+/* 渲染解析模版 */
+for(int i = 0; i < Tables.Count; i++) {
+    // vue3
+    RenderFileUsingProperties(vue3Directory + $"{SnakeFormatHump(Tables[i].Name)}View.vue", true, ref vue3Template, Tables[i]);
+}
+%>
+生成完成！
+<script runat="template">
+
+#region Properties 属性定义
+	
+    #region Output 文件输出
+    private string _outputDirectory = String.Empty;
+	
+    [Editor(typeof(System.Windows.Forms.Design.FolderNameEditor), typeof(System.Drawing.Design.UITypeEditor))] 
+	[OptionalAttribute]
+	[Category("General")]
+	[Description("生成结果的输出目录")]
+	[DefaultValue("")]
+	public string  OutputDirectory
+	{ 
+		get
+		{
+			if (_outputDirectory.Length == 0)
+			{
+				return @"C:\" + RootNameSpace;
+			}
+			else
+			{
+				return _outputDirectory;
+			}
+		}
+		set
+		{
+			if (value.EndsWith("\\")) value = value.Substring(0, value.Length - 1);
+			_outputDirectory = value;
+		} 
+	}
+	#endregion
+	
+#endregion
+
+</script>

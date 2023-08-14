@@ -19,7 +19,7 @@ CodeTemplate vue3Template = GetCodeTemplate("\\vue\\vue3.cst");
 for(int i = 0; i < Tables.Count; i++)
 {
     // vue3
-    RenderFileUsingProperties(vue3Directory + $"{SnakeFormatHump(Tables[i].Name)}View.vue", true, ref vue3Template, Tables[i]);
+    RenderFileUsingProperties(vue3Directory + SnakeFormatHump(Tables[i].Name) + "View.vue", true, ref vue3Template, Tables[i]);
 }
 %>
 生成完成！

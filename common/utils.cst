@@ -2,15 +2,19 @@
 <%@ Assembly Name="SchemaExplorer" %>
 <%@ Import Namespace="SchemaExplorer" %>
 <%@ Import Namespace="System.IO" %>
+<%@ Import Namespace="System.Text" %>
 
 <script runat="template">
 // 蛇形命名转换大小驼峰命名处理
-public string SnakeFormatHump(string snakeName, bool isBig = false) {
+public string SnakeFormatHump(string snakeName, bool isBig = false)
+{
     string newSnakeName = "";
     string[] snakeNames = snakeName.Split("_".ToCharArray());
-    for(int i = 0; i < snakeNames.Length; i++) {
+    for(int i = 0; i < snakeNames.Length; i++)
+    {
         string nameSplitFormat = snakeNames[i].Substring(0, 1).ToUpper() + snakeNames[i].Substring(1);
-        if(isBig || i > 0) {
+        if(isBig || i > 0)
+        {
             snakeNames[i] = nameSplitFormat;
         }
         newSnakeName += snakeNames[i];
@@ -30,7 +34,7 @@ public  CodeTemplate GetCodeTemplate(string TemplateName)
 	} 
 	else 
 	{ 
-		System.Text.StringBuilder errorMessage = new System.Text.StringBuilder();				
+		StringBuilder errorMessage = new StringBuilder();
 		for (int i = 0; i < compiler.Errors.Count; i++) 
 		{
 			errorMessage.Append(compiler.Errors[i].ToString()).Append("\n");

@@ -12,6 +12,9 @@ import { apiRequest } from '@/utils/apiRequest'
 // eslint-disable-next-line no-unused-vars
 import ActionResult from '@/utils/ActionResult'
 
+<%--
+    数据模型
+--%>
 /**
  * @typedef <%= SnakeFormatHump(SourceTable.Name, true) %> - <%= SourceTable.Description %>
  <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
@@ -19,16 +22,79 @@ import ActionResult from '@/utils/ActionResult'
  <% } %>
  */
 
+<%--
+    api接口请求
+--%>
 /**
- * 获取成功示例
+ * 查询 <%= SourceTable.Description %> 列表
  * @param {<%= SnakeFormatHump(SourceTable.Name, true) %>} sendData
- * @returns {Promise<ActionResult<String[][]>>}
+ * @returns {Promise<ActionResult<<%= SnakeFormatHump(SourceTable.Name, true) %>[]>>}
  */
-export function get<%= SnakeFormatHump(SourceTable.Name) %>(sendData) {
-    /** @type {import('@/utils/apiRequest').ApiConfig<TestModel>} */
+export function list<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
+    /** @type {import('@/utils/apiRequest').ApiConfig<<%= SnakeFormatHump(SourceTable.Name, true) %>>} */
     const sendObj = {
-        url: '/api/index/test_success',
+        url: '/api/xx',
         method: 'GET',
+        data: sendData,
+    }
+    return apiRequest(sendObj)
+}
+
+/**
+ * 查询 <%= SourceTable.Description %> 详细
+ * @param {<%= SnakeFormatHump(SourceTable.Name, true) %>} sendData
+ * @returns {Promise<ActionResult<<%= SnakeFormatHump(SourceTable.Name, true) %>>>}
+ */
+export function get<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
+    /** @type {import('@/utils/apiRequest').ApiConfig<<%= SnakeFormatHump(SourceTable.Name, true) %>>} */
+    const sendObj = {
+        url: '/api/xx',
+        method: 'GET',
+        data: sendData,
+    }
+    return apiRequest(sendObj)
+}
+
+/**
+ * 新增 <%= SourceTable.Description %>
+ * @param {<%= SnakeFormatHump(SourceTable.Name, true) %>} sendData
+ * @returns {Promise<ActionResult<Number>>}
+ */
+export function add<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
+    /** @type {import('@/utils/apiRequest').ApiConfig<<%= SnakeFormatHump(SourceTable.Name, true) %>>} */
+    const sendObj = {
+        url: '/api/xx',
+        method: 'POST',
+        data: sendData,
+    }
+    return apiRequest(sendObj)
+}
+
+/**
+ * 修改 <%= SourceTable.Description %>
+ * @param {<%= SnakeFormatHump(SourceTable.Name, true) %>} sendData
+ * @returns {Promise<ActionResult<Number>>}
+ */
+export function update<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
+    /** @type {import('@/utils/apiRequest').ApiConfig<<%= SnakeFormatHump(SourceTable.Name, true) %>>} */
+    const sendObj = {
+        url: '/api/xx',
+        method: 'PUT',
+        data: sendData,
+    }
+    return apiRequest(sendObj)
+}
+
+/**
+ * 删除 <%= SourceTable.Description %>
+ * @param {<%= SnakeFormatHump(SourceTable.Name, true) %>} sendData
+ * @returns {Promise<ActionResult<Number>>}
+ */
+export function del<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
+    /** @type {import('@/utils/apiRequest').ApiConfig<<%= SnakeFormatHump(SourceTable.Name, true) %>>} */
+    const sendObj = {
+        url: '/api/xx',
+        method: 'DELETE',
         data: sendData,
     }
     return apiRequest(sendObj)

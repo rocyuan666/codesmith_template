@@ -9,17 +9,43 @@
 <!-- #include file="..\\common\\mapTypeTransform.cst" -->
 <template>
     <div>
-        <h2>表名:</h2>
-        <p><%= SnakeFormatHump(SourceTable.Name) %></p>
-        <h2>表描述:</h2>
-        <p><%= SourceTable.Description %></p>
+        <el-table v-loading="loading" :data="<%= SnakeFormatHump(SourceTable.Name) %>List" empty-text="暂无数据~">
+            <el-table-column type="selection" width="55" align="center" />
+            <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+            <el-table-column label="<%= SourceTable.Columns[i].Description %>" align="center" prop="<%= SourceTable.Columns[i].Name %>" />
+            <% } %>
+            <el-table-column label="操作" align="center">
+                <template #default="scope">
+                    <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)">修改</el-button>
+                    <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
     </div>
 </template>
 
 <script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>">
-/**
- * @type {import('@/api/<%= SnakeFormatHump(SourceTable.Name, true) %>').<%= SnakeFormatHump(SourceTable.Name, true) %>}
- */
+import { ref } from 'vue'
+import { list<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
+
+/**@type {import('vue').Ref<Boolean>} */
+const loading = ref(false)
+
+/**@type {import('vue').Ref<import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %>[]>} */
+const <%= SnakeFormatHump(SourceTable.Name) %>List = ref([])
+
+/** 查询 <%= SourceTable.Description %> 列表 */
+async function getList() {
+    loading.value = true
+    try {
+        const res = await list<%= SnakeFormatHump(SourceTable.Name, true) %>()
+        <%= SnakeFormatHump(SourceTable.Name) %>List.value = res.data
+    } catch (error) {
+        /* empty */
+    }
+    loading.value = false
+}
+getList()
 </script>
 
 <style scoped lang="scss"></style>

@@ -1,21 +1,35 @@
-﻿<%-- 
-Name:
-Author: 
-Description: 
---%>
-<%@ Template Language="C#" TargetLanguage="Text" %>
-<%@ Property Name="SampleStringProperty" Default="SomeValue" Type="System.String" %>
-<%@ Property Name="SampleBooleanProperty" Default="True" Type="System.Boolean" %>
-My static content here.
-My dynamic content here: "<%= SampleStringProperty %>"
-Call a script method: <%= SampleMethod() %>
-<% if (SampleBooleanProperty) { %>
-My conditional content here.
-<% } %>
-<script runat="template">
-// My methods here.
-public string SampleMethod()
-{
-  return "Method output.";
+﻿<%@ Template Language="C#" TargetLanguage="Text" Description="js api模板" %>
+
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="所基于的表" %>
+
+<!-- #include file="..\\common\\utils.cst" -->
+<!-- #include file="..\\common\\mapTypeTransform.cst" -->
+import { apiRequest } from '@/utils/apiRequest'
+// eslint-disable-next-line no-unused-vars
+import ActionResult from '@/utils/ActionResult'
+
+/**
+ * @typedef <%= SnakeFormatHump(SourceTable.Name, true) %> - <%= SourceTable.Description %>
+ <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+ * @property {<%= DbTypeToJsType(SourceTable.Columns[i].DataType) %>} <%= SourceTable.Columns[i].Name %> - <%= SourceTable.Columns[i].Description %>
+ <% } %>
+ */
+
+/**
+ * 获取成功示例
+ * @param {<%= SnakeFormatHump(SourceTable.Name, true) %>} sendData
+ * @returns {Promise<ActionResult<String[][]>>}
+ */
+export function get<%= SnakeFormatHump(SourceTable.Name) %>(sendData) {
+    /** @type {import('@/utils/apiRequest').ApiConfig<TestModel>} */
+    const sendObj = {
+        url: '/api/index/test_success',
+        method: 'GET',
+        data: sendData,
+    }
+    return apiRequest(sendObj)
 }
-</script>

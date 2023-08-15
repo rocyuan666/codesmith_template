@@ -10,15 +10,20 @@
 <%
 #region 模板获取
 // vue3
-CodeTemplate vue3Template = GetCodeTemplate("\\vue\\index.vue3.cst");
+CodeTemplate vue3IndexTemplate = GetCodeTemplate("\\vue\\index.vue3.cst");
+// js api
+CodeTemplate jsApiTemplate = GetCodeTemplate("\\js\\api.cst");
 #endregion
 
 #region 指定输出目录 & 渲染解析模版
 for(int i = 0; i < Tables.Count; i++)
 {
     // vue3
-    string vue3Directory = OutputDirectory + "\\" + RootNameSpace + "\\vue3\\view\\" + SnakeFormatHump(Tables[i].Name) + "\\index.vue";
-    RenderFileUsingProperties(vue3Directory, true, ref vue3Template, Tables[i]);
+    string vue3IndexDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue3\\view\\" + SnakeFormatHump(Tables[i].Name) + "\\index.vue";
+    RenderFileUsingProperties(vue3IndexDirectory, true, ref vue3IndexTemplate, Tables[i]);
+    // js api
+    string jsApiDirectory = OutputDirectory + "\\" + RootNameSpace + "\\js\\api\\" + SnakeFormatHump(Tables[i].Name) + ".js";
+    RenderFileUsingProperties(jsApiDirectory, true, ref jsApiTemplate, Tables[i]);
 }
 #endregion
 %>

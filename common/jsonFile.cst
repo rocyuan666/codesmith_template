@@ -1,12 +1,14 @@
 ﻿<%@ Template Language="C#" TargetLanguage="Text" Description="json文件加载" %>
+<%@ Import Namespace="System.IO" %>
+<%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
 
-<% getFileCont(); %>
+<%@ Property Name="JsonFile" Type="System.String" Category="File" Optional="False" Description="json文件的路径" Editor="System.Windows.Forms.Design.FileNameEditor, System.Design" %>
 
+<%
+if (!File.Exists(Path.Combine(this.CodeTemplateInfo.DirectoryName, JsonFile)))
+    throw new ApplicationException("json文件不存在");
 
-<script runat="template">
+JObject root = JObject.Parse(File.ReadAllText(Path.Combine(this.CodeTemplateInfo.DirectoryName, JsonFile)));
 
-public void getFileCont()
-{
-    Response.WriteLine("hello");
-}
-</script>
+Response.WriteLine(root["version"]);
+%>

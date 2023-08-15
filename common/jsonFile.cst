@@ -1,1 +1,12 @@
-﻿
+﻿<%@ Template Language="C#" TargetLanguage="Text" Description="json文件加载" %>
+
+<% getFileCont(); %>
+
+
+<script runat="template">
+
+public void getFileCont()
+{
+    Response.WriteLine("hello");
+}
+</script>

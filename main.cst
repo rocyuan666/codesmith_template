@@ -7,19 +7,20 @@
 
 <!-- #include file="common\\utils.cst" -->
 项目名称：<%= RootNameSpace %>
-
 <%
-/* 模板获取 */
+#region 模板获取
 // vue3
 CodeTemplate vue3Template = GetCodeTemplate("\\vue\\index.vue3.cst");
+#endregion
 
-/* 渲染解析模版 & 指定输出目录 */
+#region 指定输出目录 & 渲染解析模版
 for(int i = 0; i < Tables.Count; i++)
 {
     // vue3
     string vue3Directory = OutputDirectory + "\\" + RootNameSpace + "\\vue3\\view\\" + SnakeFormatHump(Tables[i].Name) + "\\index.vue";
     RenderFileUsingProperties(vue3Directory, true, ref vue3Template, Tables[i]);
 }
+#endregion
 %>
 生成完成！
 <script runat="template">
@@ -40,7 +41,7 @@ for(int i = 0; i < Tables.Count; i++)
 		{
 			if (_outputDirectory.Length == 0)
 			{
-				return @"C:\" + RootNameSpace;
+				return CodeTemplateInfo.DirectoryName + "\\out";
 			}
 			else
 			{

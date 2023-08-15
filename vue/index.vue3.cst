@@ -6,7 +6,7 @@
 <%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="所基于的表" %>
 
 <!-- #include file="..\\common\\utils.cst" -->
-<!-- #include file="..\\common\\typeTransform.cst" -->
+<!-- #include file="..\\common\\mapTypeTransform.cst" -->
 <template>
     <div>
         <h2>表名:</h2>

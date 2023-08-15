@@ -2,13 +2,13 @@
 <%@ Import Namespace="System.IO" %>
 <%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
 
-<%@ Property Name="JsonFile" Type="System.String" Category="File" Optional="False" Description="json文件的路径" Editor="System.Windows.Forms.Design.FileNameEditor, System.Design" %>
+<%@ Property Name="JsonFile" Type="System.String" Category="File" Optional="False" Description="json文件的路径"  Editor="System.Windows.Forms.Design.FileNameEditor, System.Design" %>
 
 <%
 if (!File.Exists(Path.Combine(this.CodeTemplateInfo.DirectoryName, JsonFile)))
     throw new ApplicationException("json文件不存在");
 
-JObject root = JObject.Parse(File.ReadAllText(Path.Combine(this.CodeTemplateInfo.DirectoryName, JsonFile)));
+JObject json = JObject.Parse(File.ReadAllText(Path.Combine(this.CodeTemplateInfo.DirectoryName, JsonFile)));
 
-Response.WriteLine(root["version"]);
+Response.WriteLine(json);
 %>

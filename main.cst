@@ -1,13 +1,21 @@
 ﻿<%@ Template Language="C#" TargetLanguage="Text" Description="入口文件" %>
 <%@ Assembly Name="SchemaExplorer" %>
 <%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="System.IO" %>
+<%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
 
 <%@ Property Name="Tables" Type="SchemaExplorer.TableSchemaCollection" Category="Context" Optional="False" Description="要生成代码的表集合" %>
 <%@ Property Name="RootNameSpace" Type="System.String" Default="xxx项目" Optional="False" Category="General" Description="项目名称" %>
+<%@ Property Name="JsonFile" Type="System.String" Category="File" Default="example.json" Description="json文件的路径"  Editor="System.Windows.Forms.Design.FileNameEditor, System.Design" %>
 
 <!-- #include file="common\\utils.cst" -->
 项目名称：<%= RootNameSpace %>
 <%
+#region json文件加载 & 解析为JObject
+JObject json = JObject.Parse(File.ReadAllText(JsonFile));
+Response.WriteLine(json);
+#endregion
+
 #region 模板获取
 // vue3
 CodeTemplate vue3IndexTemplate = GetCodeTemplate("\\vue\\index.vue3.cst");

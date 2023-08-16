@@ -9,7 +9,6 @@
 <!-- #include file="..\\common\\utils.cst" -->
 <!-- #include file="..\\common\\mapTypeTransform.cst" -->
 import { apiRequest } from '@/utils/apiRequest'
-// eslint-disable-next-line no-unused-vars
 import ActionResult from '@/utils/ActionResult'
 
 <%--

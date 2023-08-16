@@ -33,7 +33,7 @@ import ActionResult from '@/utils/ActionResult'
 export function list<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
     /** @type {import('@/utils/apiRequest').ApiConfig<<%= SnakeFormatHump(SourceTable.Name, true) %>>} */
     const sendObj = {
-        url: '/api/xx',
+        url: '/api/<%= SourceTable.Name %>/list',
         method: 'GET',
         data: sendData,
     }
@@ -45,10 +45,10 @@ export function list<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
  * @param {<%= SnakeFormatHump(SourceTable.Name, true) %>} sendData
  * @returns {Promise<ActionResult<<%= SnakeFormatHump(SourceTable.Name, true) %>>>}
  */
-export function get<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
+export function detail<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
     /** @type {import('@/utils/apiRequest').ApiConfig<<%= SnakeFormatHump(SourceTable.Name, true) %>>} */
     const sendObj = {
-        url: '/api/xx',
+        url: '/api/<%= SourceTable.Name %>/detail',
         method: 'GET',
         data: sendData,
     }
@@ -63,7 +63,7 @@ export function get<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
 export function add<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
     /** @type {import('@/utils/apiRequest').ApiConfig<<%= SnakeFormatHump(SourceTable.Name, true) %>>} */
     const sendObj = {
-        url: '/api/xx',
+        url: '/api/<%= SourceTable.Name %>/add',
         method: 'POST',
         data: sendData,
     }
@@ -75,11 +75,11 @@ export function add<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
  * @param {<%= SnakeFormatHump(SourceTable.Name, true) %>} sendData
  * @returns {Promise<ActionResult<Number>>}
  */
-export function update<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
+export function edit<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
     /** @type {import('@/utils/apiRequest').ApiConfig<<%= SnakeFormatHump(SourceTable.Name, true) %>>} */
     const sendObj = {
-        url: '/api/xx',
-        method: 'PUT',
+        url: '/api/<%= SourceTable.Name %>/edit',
+        method: 'POST',
         data: sendData,
     }
     return apiRequest(sendObj)
@@ -93,8 +93,8 @@ export function update<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
 export function del<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
     /** @type {import('@/utils/apiRequest').ApiConfig<<%= SnakeFormatHump(SourceTable.Name, true) %>>} */
     const sendObj = {
-        url: '/api/xx',
-        method: 'DELETE',
+        url: '/api/<%= SourceTable.Name %>/del',
+        method: 'POST',
         data: sendData,
     }
     return apiRequest(sendObj)

@@ -9,6 +9,11 @@
 <!-- #include file="..\\common\\mapTypeTransform.cst" -->
 <template>
     <div>
+        <el-row :gutter="10">
+            <el-col :span="1.5">
+                <el-button type="primary" plain icon="Plus" @click="handleAdd">新增</el-button>
+            </el-col>
+        </el-row>
         <el-table v-loading="loading" :data="<%= SnakeFormatHump(SourceTable.Name) %>List" empty-text="暂无数据~">
             <el-table-column type="selection" width="55" align="center" />
             <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
@@ -25,8 +30,10 @@
 </template>
 
 <script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>">
-import { ref } from 'vue'
-import { list<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
+import { ref, getCurrentInstance } from 'vue'
+import { list<%= SnakeFormatHump(SourceTable.Name, true) %>, del<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
+
+const { proxy } = getCurrentInstance()
 
 /**@type {import('vue').Ref<Boolean>} */
 const loading = ref(false)
@@ -45,6 +52,30 @@ async function getList() {
     }
     loading.value = false
 }
+
+/**
+ * 删除按钮操作
+ * @param {import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %>} row
+ */
+function handleDelete(row) {
+    const id = row.<%= SourceTable.PrimaryKey.MemberColumns[0].Name %>
+    proxy.$modal
+        .confirm('是否确认删除编号为"' + id + '"的数据项？')
+        .then(function () {
+            return delFaAdmin({ id })
+        })
+        .then(() => {
+            getList()
+            proxy.$modal.msgSuccess('删除成功')
+        })
+        .catch(() => {})
+}
+
+/** 新增按钮操作 */
+function handleAdd() {
+    proxy.$modal.msgSuccess('新增操作')
+}
+
 getList()
 </script>
 

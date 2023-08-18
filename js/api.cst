@@ -5,6 +5,7 @@
 
 
 <%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="所基于的表" %>
+<%@ Property Name="ExtInfo" Type="CodeSmith.Engine.Json.Linq.JToken" Category="Context" Description="表额外数据" %>
 
 <!-- #include file="..\\common\\utils.cst" -->
 <!-- #include file="..\\common\\mapTypeTransform.cst" -->

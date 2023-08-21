@@ -3,8 +3,18 @@
 <%@ Import Namespace="SchemaExplorer" %>
 <%@ Import Namespace="System.IO" %>
 <%@ Import Namespace="System.Text" %>
+<%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
 
 <script runat="template">
+// json 数据格式修改
+public JObject jsonFormat(JToken json, String keyField) {
+    JObject newJson = new JObject();
+    for(int i = 0; i < ((JArray)json).Count; i++){
+        newJson.Add((String)json[i][keyField], json[i]);
+    }
+    return newJson;
+}
+
 // 蛇形命名转换大小驼峰命名处理
 public string SnakeFormatHump(string snakeName, bool isBig = false)
 {
@@ -65,7 +75,7 @@ public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTe
 }
 
 // 解析模版 (传表和额外数据属性值)
-public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTemplate template,TableSchema SourceTable, CodeSmith.Engine.Json.Linq.JToken tableExtInfo)
+public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTemplate template,TableSchema SourceTable, JObject tableExtInfo)
 {
 	if( overrite || (!File.Exists(fullPath)) )
 	{

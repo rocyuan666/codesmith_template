@@ -1,17 +1,18 @@
 ﻿<%@ Template Language="C#" TargetLanguage="Text" Description="vue3模板" %>
 <%@ Assembly Name="SchemaExplorer" %>
 <%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
 
 
 <%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="所基于的表" %>
-<%@ Property Name="ExtInfo" Type="CodeSmith.Engine.Json.Linq.JToken" Category="Context" Description="表额外数据" %>
+<%@ Property Name="ExtInfo" Type="CodeSmith.Engine.Json.Linq.JObject" Category="Context" Description="表额外数据" %>
 
 <!-- #include file="..\\common\\utils.cst" -->
 <!-- #include file="..\\common\\mapTypeTransform.cst" -->
 <template>
-    <div>
+    <div class="app-container">
         <el-row :gutter="10">
-            <el-col :span="1.5">
+            <el-col :span="1.5" class="mb8">
                 <el-button type="primary" plain icon="Plus" @click="handleAdd">新增</el-button>
             </el-col>
         </el-row>

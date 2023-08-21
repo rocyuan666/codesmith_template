@@ -27,11 +27,11 @@ for(int i = 0; i < Tables.Count; i++)
 {
     // vue3
     string vue3IndexDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue\\view\\" + SnakeFormatHump(Tables[i].Name) + "\\index.vue";
-    RenderFileUsingProperties(vue3IndexDirectory, true, ref vue3IndexTemplate, Tables[i], json[(Tables[i].Name)]);
+    RenderFileUsingProperties(vue3IndexDirectory, true, ref vue3IndexTemplate, Tables[i], jsonFormat(json[(Tables[i].Name)], "columnField"));
 
     // js api
     string jsApiDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue\\api\\" + SnakeFormatHump(Tables[i].Name) + ".js";
-    RenderFileUsingProperties(jsApiDirectory, true, ref jsApiTemplate, Tables[i], json[(Tables[i].Name)]);
+    RenderFileUsingProperties(jsApiDirectory, true, ref jsApiTemplate, Tables[i], jsonFormat(json[(Tables[i].Name)], "columnField"));
 }
 #endregion
 %>

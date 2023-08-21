@@ -5,11 +5,11 @@
 
 
 <%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="所基于的表" %>
-<%@ Property Name="ExtInfo" Type="CodeSmith.Engine.Json.Linq.JToken" Category="Context" Description="表额外数据" %>
+<%@ Property Name="ExtInfo" Type="CodeSmith.Engine.Json.Linq.JObject" Category="Context" Description="表额外数据" %>
 
 <!-- #include file="..\\common\\utils.cst" -->
 <!-- #include file="..\\common\\mapTypeTransform.cst" -->
-import { apiRequest } from '@/utils/apiRequest'
+import request from '@/utils/request'
 import ActionResult from '@/utils/ActionResult'
 
 <%--
@@ -31,13 +31,13 @@ import ActionResult from '@/utils/ActionResult'
  * @returns {Promise<ActionResult<<%= SnakeFormatHump(SourceTable.Name, true) %>[]>>}
  */
 export function list<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
-    /** @type {import('@/utils/apiRequest').ApiConfig<<%= SnakeFormatHump(SourceTable.Name, true) %>>} */
+    /**@type {import('axios').AxiosRequestConfig} */
     const sendObj = {
         url: '/api/<%= SourceTable.Name %>/list',
         method: 'GET',
-        data: sendData,
+        params: sendData,
     }
-    return apiRequest(sendObj)
+    return request(sendObj)
 }
 
 /**
@@ -46,13 +46,13 @@ export function list<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
  * @returns {Promise<ActionResult<<%= SnakeFormatHump(SourceTable.Name, true) %>>>}
  */
 export function detail<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
-    /** @type {import('@/utils/apiRequest').ApiConfig<<%= SnakeFormatHump(SourceTable.Name, true) %>>} */
+    /**@type {import('axios').AxiosRequestConfig} */
     const sendObj = {
         url: '/api/<%= SourceTable.Name %>/detail',
         method: 'GET',
-        data: sendData,
+        params: sendData,
     }
-    return apiRequest(sendObj)
+    return request(sendObj)
 }
 
 /**
@@ -61,13 +61,13 @@ export function detail<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
  * @returns {Promise<ActionResult<Number>>}
  */
 export function add<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
-    /** @type {import('@/utils/apiRequest').ApiConfig<<%= SnakeFormatHump(SourceTable.Name, true) %>>} */
+    /**@type {import('axios').AxiosRequestConfig} */
     const sendObj = {
         url: '/api/<%= SourceTable.Name %>/add',
         method: 'POST',
         data: sendData,
     }
-    return apiRequest(sendObj)
+    return request(sendObj)
 }
 
 /**
@@ -76,13 +76,13 @@ export function add<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
  * @returns {Promise<ActionResult<Number>>}
  */
 export function edit<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
-    /** @type {import('@/utils/apiRequest').ApiConfig<<%= SnakeFormatHump(SourceTable.Name, true) %>>} */
+    /**@type {import('axios').AxiosRequestConfig} */
     const sendObj = {
         url: '/api/<%= SourceTable.Name %>/edit',
         method: 'POST',
         data: sendData,
     }
-    return apiRequest(sendObj)
+    return request(sendObj)
 }
 
 /**
@@ -91,11 +91,11 @@ export function edit<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
  * @returns {Promise<ActionResult<Number>>}
  */
 export function del<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
-    /** @type {import('@/utils/apiRequest').ApiConfig<<%= SnakeFormatHump(SourceTable.Name, true) %>>} */
+    /**@type {import('axios').AxiosRequestConfig} */
     const sendObj = {
         url: '/api/<%= SourceTable.Name %>/del',
         method: 'POST',
         data: sendData,
     }
-    return apiRequest(sendObj)
+    return request(sendObj)
 }

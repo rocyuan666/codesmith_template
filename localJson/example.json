@@ -1,9 +1,169 @@
 {
-  "fa_admin": {
-    "name": "codesmith_template",
-    "version": "0.0.1",
-    "a": [
-        {"b": 123}
-    ]
-  }
+  "fa_admin": [
+    {
+      "columnField": "id",
+      "columnName": "ID",
+      "isInsert": true,
+      "isEdit": true,
+      "isList": true,
+      "isQuery": true,
+      "queryType": "EQ",
+      "htmlType": "input",
+      "dictType": ""
+    },
+    {
+      "columnField": "username",
+      "columnName": "用户名",
+      "isInsert": true,
+      "isEdit": true,
+      "isList": true,
+      "isQuery": true,
+      "queryType": "EQ",
+      "htmlType": "input",
+      "dictType": ""
+    },
+    {
+      "columnField": "nickname",
+      "columnName": "昵称",
+      "isInsert": true,
+      "isEdit": true,
+      "isList": true,
+      "isQuery": true,
+      "queryType": "EQ",
+      "htmlType": "input",
+      "dictType": ""
+    },
+    {
+      "columnField": "password",
+      "columnName": "密码",
+      "isInsert": true,
+      "isEdit": true,
+      "isList": true,
+      "isQuery": true,
+      "queryType": "EQ",
+      "htmlType": "input",
+      "dictType": ""
+    },
+    {
+      "columnField": "salt",
+      "columnName": "密码盐",
+      "isInsert": true,
+      "isEdit": true,
+      "isList": true,
+      "isQuery": true,
+      "queryType": "EQ",
+      "htmlType": "input",
+      "dictType": ""
+    },
+    {
+      "columnField": "avatar",
+      "columnName": "头像",
+      "isInsert": true,
+      "isEdit": true,
+      "isList": true,
+      "isQuery": true,
+      "queryType": "EQ",
+      "htmlType": "input",
+      "dictType": ""
+    },
+    {
+      "columnField": "email",
+      "columnName": "电子邮箱",
+      "isInsert": true,
+      "isEdit": true,
+      "isList": true,
+      "isQuery": true,
+      "queryType": "EQ",
+      "htmlType": "input",
+      "dictType": ""
+    },
+    {
+      "columnField": "mobile",
+      "columnName": "手机号码",
+      "isInsert": true,
+      "isEdit": true,
+      "isList": true,
+      "isQuery": true,
+      "queryType": "EQ",
+      "htmlType": "input",
+      "dictType": ""
+    },
+    {
+      "columnField": "loginfailure",
+      "columnName": "失败次数",
+      "isInsert": true,
+      "isEdit": true,
+      "isList": true,
+      "isQuery": true,
+      "queryType": "EQ",
+      "htmlType": "input",
+      "dictType": ""
+    },
+    {
+      "columnField": "logintime",
+      "columnName": "登录时间",
+      "isInsert": true,
+      "isEdit": true,
+      "isList": true,
+      "isQuery": true,
+      "queryType": "EQ",
+      "htmlType": "input",
+      "dictType": ""
+    },
+    {
+      "columnField": "loginip",
+      "columnName": "登录IP",
+      "isInsert": true,
+      "isEdit": true,
+      "isList": true,
+      "isQuery": true,
+      "queryType": "EQ",
+      "htmlType": "input",
+      "dictType": ""
+    },
+    {
+      "columnField": "createtime",
+      "columnName": "创建时间",
+      "isInsert": true,
+      "isEdit": true,
+      "isList": true,
+      "isQuery": true,
+      "queryType": "EQ",
+      "htmlType": "input",
+      "dictType": ""
+    },
+    {
+      "columnField": "updatetime",
+      "columnName": "更新时间",
+      "isInsert": true,
+      "isEdit": true,
+      "isList": true,
+      "isQuery": true,
+      "queryType": "EQ",
+      "htmlType": "input",
+      "dictType": ""
+    },
+    {
+      "columnField": "token",
+      "columnName": "Session标识",
+      "isInsert": true,
+      "isEdit": true,
+      "isList": true,
+      "isQuery": true,
+      "queryType": "EQ",
+      "htmlType": "input",
+      "dictType": ""
+    },
+    {
+      "columnField": "status",
+      "columnName": "状态",
+      "isInsert": true,
+      "isEdit": true,
+      "isList": true,
+      "isQuery": true,
+      "queryType": "EQ",
+      "htmlType": "input",
+      "dictType": ""
+    }
+  ]
 }

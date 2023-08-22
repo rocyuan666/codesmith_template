@@ -87,7 +87,7 @@ export function edit<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
 
 /**
  * 删除 <%= SourceTable.Description %>
- * @param {<%= SnakeFormatHump(SourceTable.Name, true) %>} sendData
+ * @param {{id: Number}} sendData
  * @returns {Promise<ActionResult<Number>>}
  */
 export function del<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {

@@ -75,7 +75,7 @@ public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTe
 }
 
 // 解析模版 (传表和额外数据属性值)
-public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTemplate template,TableSchema SourceTable, JObject tableExtInfo)
+public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTemplate template,TableSchema SourceTable, JToken tableExtInfo)
 {
 	if( overrite || (!File.Exists(fullPath)) )
 	{

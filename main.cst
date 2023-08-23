@@ -10,6 +10,7 @@
 
 <!-- #include file="common\\utils.cst" -->
 项目名称：<%= RootNameSpace %>
+
 <%
 #region json文件加载 & 解析为JObject
 JObject json = JObject.Parse(File.ReadAllText(JsonFile));
@@ -25,17 +26,25 @@ CodeTemplate jsApiTemplate = GetCodeTemplate("\\js\\api.cst");
 #region 指定输出目录 & 渲染解析模版
 for(int i = 0; i < Tables.Count; i++)
 {
+    // json中不存在表数据
+    JToken extTableJson = json[Tables[i].Name];
+    if(extTableJson == null) {
+        Response.WriteLine("【失败无表json数据】：" + Tables[i].Name);
+        continue;
+    }
+    
     // vue3
     string vue3IndexDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue\\view\\" + SnakeFormatHump(Tables[i].Name) + "\\index.vue";
-    RenderFileUsingProperties(vue3IndexDirectory, true, ref vue3IndexTemplate, Tables[i], jsonFormat(json[(Tables[i].Name)], "columnField"));
+    RenderFileUsingProperties(vue3IndexDirectory, true, ref vue3IndexTemplate, Tables[i], extTableJson);
 
     // js api
     string jsApiDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue\\api\\" + SnakeFormatHump(Tables[i].Name) + ".js";
-    RenderFileUsingProperties(jsApiDirectory, true, ref jsApiTemplate, Tables[i], jsonFormat(json[(Tables[i].Name)], "columnField"));
+    RenderFileUsingProperties(jsApiDirectory, true, ref jsApiTemplate, Tables[i], extTableJson);
 }
 #endregion
 %>
-生成完成！
+
+完成！
 <script runat="template">
 
 #region Properties 属性定义

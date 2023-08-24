@@ -1,0 +1,23 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Description="vue3模板" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
+
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="所基于的表" %>
+<%@ Property Name="ExtInfo" Type="JToken" Category="Context" Description="表额外数据" %>
+
+<!-- #include file="..\\common\\utils.cst" -->
+<!-- #include file="..\\common\\mapTypeTransform.cst" -->
+<template>
+    
+</template>
+
+<script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>">
+import { ref, getCurrentInstance } from 'vue'
+import { list<%= SnakeFormatHump(SourceTable.Name, true) %>, del<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
+
+const { proxy } = getCurrentInstance()
+
+</script>
+
+<style scoped lang="scss"></style>

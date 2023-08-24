@@ -1,8 +1,6 @@
 ﻿<%@ Template Language="C#" TargetLanguage="Text" Description="vue3模板" %>
 <%@ Assembly Name="SchemaExplorer" %>
 <%@ Import Namespace="SchemaExplorer" %>
-<%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
-
 
 <%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="所基于的表" %>
 <%@ Property Name="ExtInfo" Type="JToken" Category="Context" Description="表额外数据" %>
@@ -11,15 +9,21 @@
 <!-- #include file="..\\common\\mapTypeTransform.cst" -->
 <template>
     <div class="app-container">
+        <!-- 查询条件 -->
+        <!-- 操作按钮 -->
         <el-row :gutter="10">
             <el-col :span="1.5" class="mb8">
                 <el-button type="primary" plain icon="Plus" @click="handleAdd">新增</el-button>
             </el-col>
+            <el-col :span="1.5">
+                <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete">删除</el-button>
+            </el-col>
         </el-row>
+        <!-- 表格 -->
         <el-table v-loading="loading" :data="<%= SnakeFormatHump(SourceTable.Name) %>List" empty-text="暂无数据~">
             <el-table-column type="selection" width="55" align="center" />
             <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
-            <el-table-column label="<%= SourceTable.Columns[i].Description %>" align="center" prop="<%= SourceTable.Columns[i].Name %>" />
+            <el-table-column label="<%= ExtInfo[SourceTable.Columns[i].Name]["label"] %>" align="center" prop="<%= SourceTable.Columns[i].Name %>" />
             <% } %>
             <el-table-column label="操作" align="center">
                 <template #default="scope">
@@ -28,6 +32,10 @@
                 </template>
             </el-table-column>
         </el-table>
+        <!-- 分页 -->
+        <pagination v-show="total > 0" :total="total" v-model:page="queryParams.page" v-model:limit="queryParams.limit" @pagination="getList" />
+        <!-- 新增修改弹窗 -->
+        <AddOrEdit ref="addOrEdit" @updateList="getList"></AddOrEdit>
     </div>
 </template>
 

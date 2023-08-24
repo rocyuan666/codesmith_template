@@ -1,7 +1,7 @@
 {
   "fa_admin": {
     "id": {
-      "label": "ID",
+      "label": "编号",
       "add": false,
       "edit": false,
       "list": false,

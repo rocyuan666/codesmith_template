@@ -3,163 +3,163 @@
   <map caseSensitive="true" returnKeyWhenNotFound="false" description="mysql to javascript">
     <item>
       <key>bigint</key>
-      <value></value>
+      <value>Number</value>
     </item>
     <item>
       <key>binary</key>
-      <value></value>
+      <value>Number</value>
     </item>
     <item>
       <key>bit</key>
-      <value></value>
+      <value>Number</value>
     </item>
     <item>
       <key>blob</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>char</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>date</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>datetime</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>decimal</key>
-      <value></value>
+      <value>Number</value>
     </item>
     <item>
       <key>double</key>
-      <value></value>
+      <value>Number</value>
     </item>
     <item>
       <key>enum</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>float</key>
-      <value></value>
+      <value>Number</value>
     </item>
     <item>
       <key>geometry</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>geometrycollection</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>int</key>
-      <value></value>
+      <value>Number</value>
     </item>
     <item>
       <key>integer</key>
-      <value></value>
+      <value>Number</value>
     </item>
     <item>
       <key>json</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>linestring</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>longblob</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>longtext</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>mediumblob</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>mediumint</key>
-      <value></value>
+      <value>Number</value>
     </item>
     <item>
       <key>mediumtext</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>multilinestring</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>multipoint</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>multipolygon</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>numeric</key>
-      <value></value>
+      <value>Number</value>
     </item>
     <item>
       <key>point</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>polygon</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>real</key>
-      <value></value>
+      <value>Number</value>
     </item>
     <item>
       <key>set</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>smallint</key>
-      <value></value>
+      <value>Number</value>
     </item>
     <item>
       <key>text</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>time</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>timestamp</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>tinyblob</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>tinyint</key>
-      <value></value>
+      <value>Number</value>
     </item>
     <item>
       <key>tinytext</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>varbinary</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>varchar</key>
-      <value></value>
+      <value>String</value>
     </item>
     <item>
       <key>year</key>
-      <value></value>
+      <value>String</value>
     </item>
   </map>
 </codeSmith>

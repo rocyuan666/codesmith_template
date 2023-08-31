@@ -1,34 +1,148 @@
 ﻿<%@ Template Language="C#" TargetLanguage="Text" Description="vue3模板" %>
 <%@ Assembly Name="SchemaExplorer" %>
 <%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="System.Collections.Generic" %>
 
 <%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="所基于的表" %>
 <%@ Property Name="ExtInfo" Type="JToken" Category="Context" Description="表额外数据" %>
 
 <!-- #include file="..\\common\\utils.cst" -->
 <!-- #include file="..\\common\\mapTypeTransform.cst" -->
+<%
+#region 是否有配置搜索
+
+Boolean isSearch = false;
+for(int i = 0; i < SourceTable.Columns.Count; i++)
+{
+    if((Boolean)ExtInfo[SourceTable.Columns[i].Name]["search"] == true)
+    {
+        isSearch = true;
+        break;
+    }
+}
+
+#endregion
+%>
 <template>
     <div class="app-container">
+        <% if(isSearch) { %>
         <!-- 查询条件 -->
+        <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px" @submit.prevent>
+        <%-- 循环字段 --%>
+        <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+            <% String fieldName = SourceTable.Columns[i].Name; %>
+            <%-- 判断字段是否设置搜索查询 --%>
+            <% if((Boolean)ExtInfo[fieldName]["search"] == true) { %>
+            <%-- 判断字段对应的表单类型 --%>
+            <% if((String)ExtInfo[fieldName]["display"] == "input") { %>
+            <%-- 文本框 --%>
+            <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+                <el-input v-model="queryParams.query.<%= fieldName %>.value" placeholder="<%= ExtInfo[fieldName]["label"] %>" clearable @keyup.enter="handleQuery" style="width: 214px" />
+            </el-form-item>
+            <% } else if((String)ExtInfo[fieldName]["display"] == "textarea") { %>
+            <%-- 文本域 --%>
+            <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+                <el-input v-model="queryParams.query.<%= fieldName %>.value" placeholder="<%= ExtInfo[fieldName]["label"] %>" type="textarea" @keyup.enter="handleQuery" />
+            </el-form-item>
+            <% } else if((String)ExtInfo[fieldName]["display"] == "select") { %>
+            <%-- 下拉框 --%>
+            <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+                <el-select v-model="queryParams.query.<%= fieldName %>.value" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>" clearable>
+                    <% if((String)ExtInfo[fieldName]["dict"] == "") { %>
+                    <el-option label="请手动写入选项 或者 选择字典生成" value="" />
+                    <% } else { %>
+                    <el-option v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :value="dict.value" />
+                    <% } %>
+                </el-select>
+            </el-form-item>
+            <% } else if((String)ExtInfo[fieldName]["display"] == "radio") { %>
+            <%-- 单选框 --%>
+            <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+                <el-radio-group v-model="queryParams.query.<%= fieldName %>.value">
+                    <% if((String)ExtInfo[fieldName]["dict"] == "") { %>
+                    <el-radio label="1">请手动写入选项 或者 选择字典生成</el-radio>
+                    <% } else { %>
+                    <el-radio v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.value">{{dict.label}}</el-radio>
+                    <% } %>
+                </el-radio-group>
+            </el-form-item>
+            <% } else if((String)ExtInfo[fieldName]["display"] == "checkbox") { %>
+            <%-- 多选框 --%>
+            <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+                <el-checkbox-group v-model="queryParams.query.<%= fieldName %>.value">
+                    <% if((String)ExtInfo[fieldName]["dict"] == "") { %>
+                    <el-checkbox label="1">请手动写入选项 或者 选择字典生成</el-checkbox>
+                    <% } else { %>
+                    <el-checkbox v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.value">{{dict.label}}</el-checkbox>
+                    <% } %>
+                </el-checkbox-group>
+            </el-form-item>
+            <% } else if((String)ExtInfo[fieldName]["display"] == "datetime" && (String)ExtInfo[fieldName]["query"] != "BETWEEN") { %>
+            <%-- 日期时间 非范围 --%>
+            <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+                <el-date-picker clearable v-model="queryParams.query.<%= fieldName %>.value" type="date" value-format="YYYY-MM-DD" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>"></el-date-picker>
+            </el-form-item>
+            <% } else if((String)ExtInfo[fieldName]["display"] == "datetime" && (String)ExtInfo[fieldName]["query"] == "BETWEEN") { %>
+            <%-- 日期时间 范围 --%>
+            <el-form-item label="<%= ExtInfo[fieldName]["label"] %>">
+                <%-- ！！！可能需要特殊处理！！！ --%>
+                <el-date-picker v-model="queryParams.query.<%= fieldName %>.value" value-format="YYYY-MM-DD" type="daterange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
+            </el-form-item>
+            <% } %>
+            <% } %>
+        <% } %>
+        </el-form>
+        <% } %>
         <!-- 操作按钮 -->
         <el-row :gutter="10">
             <el-col :span="1.5" class="mb8">
-                <el-button type="primary" plain icon="Plus" @click="handleAdd">新增</el-button>
+                <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.add']">新增</el-button>
             </el-col>
             <el-col :span="1.5">
-                <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete">删除</el-button>
+                <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.del']">删除</el-button>
             </el-col>
         </el-row>
         <!-- 表格 -->
         <el-table v-loading="loading" :data="<%= SnakeFormatHump(SourceTable.Name) %>List" empty-text="暂无数据~">
             <el-table-column type="selection" width="55" align="center" />
+            <%-- 循环字段 --%>
             <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
-            <el-table-column label="<%= ExtInfo[SourceTable.Columns[i].Name]["label"] %>" align="center" prop="<%= SourceTable.Columns[i].Name %>" />
+            <% String fieldName = SourceTable.Columns[i].Name; %>
+            <%-- 判断字段是否设置列表显示 --%>
+            <% if((Boolean)ExtInfo[fieldName]["list"] == true) { %>
+            <%-- 判断字段对应的表单类型 --%>
+            <% if((String)ExtInfo[fieldName]["display"] == "input") { %>
+            <%-- 文本框 --%>
+            <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
+            <% } else if((String)ExtInfo[fieldName]["display"] == "textarea") { %>
+            <%-- 文本域 --%>
+            <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
+            <% } else if((String)ExtInfo[fieldName]["display"] == "select") { %>
+            <%-- 下拉框 --%>
+            <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
+            <% } else if((String)ExtInfo[fieldName]["display"] == "radio") { %>
+            <%-- 单选框 --%>
+            <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
+            <% } else if((String)ExtInfo[fieldName]["display"] == "checkbox") { %>
+            <%-- 复选框 --%>
+            <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
+            <% } else if((String)ExtInfo[fieldName]["display"] == "datetime") { %>
+            <%-- 日期时间 --%>
+            <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" width="180" />
+            <% } else if((String)ExtInfo[fieldName]["display"] == "imageUpload") { %>
+            <%-- 图片上传 --%>
+            <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" width="100">
+                <template #default="{ row }">
+                    <image-preview :src="row.<%= fieldName %>" :width="50" :height="50"/>
+                </template>
+            </el-table-column>
             <% } %>
-            <el-table-column label="操作" align="center">
-                <template #default="scope">
-                    <el-button link type="primary" icon="Edit" @click="handleEdit(scope.row)">修改</el-button>
-                    <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)">删除</el-button>
+            <% } %>
+            <% } %>
+            <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+                <template #default="{ row }">
+                    <el-button link type="primary" icon="Edit" @click="handleEdit(row)" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit']">修改</el-button>
+                    <el-button link type="primary" icon="Delete" @click="handleDelete(row)" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.del']">删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -40,13 +154,76 @@
 </template>
 
 <script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>">
-import { ref, getCurrentInstance } from 'vue'
+import { ref, getCurrentInstance, reactive, toRefs } from 'vue'
 import { list<%= SnakeFormatHump(SourceTable.Name, true) %>, del<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
+import AddOrEdit from './addOrEdit.vue'
 
 const { proxy } = getCurrentInstance()
 
+/**
+ * 查询包含条件项 类型
+ * @template T
+ * @typedef QueryFieldItem
+ * @property {'EQ' | 'NE'| 'GT'| 'GTE'| 'LT'| 'LTE'| 'LIKE' | 'BETWEEN'} type
+ * @property {T} value
+ */
+ 
+ /**
+ * 查询数据 类型
+ * @typedef QueryParams
+ * @property {Number} page
+ * @property {Number} limit
+ * @property {Object} query
+<% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+<% String fieldName = SourceTable.Columns[i].Name; %>
+<% if((Boolean)ExtInfo[fieldName]["search"] == true) { %>
+ * @property {QueryFieldItem<<%= MysqlTypeToJsType(SourceTable.Columns[i].NativeType) %>>} query.<%= fieldName %>
+<% } %>
+<% } %>
+ */
+ 
+ /**
+ * 原data 类型
+ * @typedef TargetData
+ * @property {QueryParams} queryParams
+ */
+ 
+ /**@type {UnwrapNestedRefs<TargetData>} */
+const data = reactive({
+    queryParams: {
+        page: 1,
+        limit: 10,
+        query: {
+<% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+<% String fieldName = SourceTable.Columns[i].Name; %>
+<% if((Boolean)ExtInfo[fieldName]["search"] == true) { %>
+            <%= fieldName %>: {
+                type: '<%= ExtInfo[fieldName]["query"] %>',
+                value: null,
+            },
+<% } %>
+<% } %>
+        },
+    },
+})
+
+/**@type {ToRef<UnwrapNestedRefs<TargetData>["queryParams"]>} */
+const queryParams = toRefs(data).queryParams
+
+/**@type {import('vue').Ref<Number>} */
+const total = ref(0)
+
 /**@type {import('vue').Ref<Boolean>} */
 const loading = ref(false)
+
+/**@type {import('vue').Ref<Boolean>} */
+const multiple = ref(true)
+
+/**@type {import('vue').Ref<Boolean>} */
+const showSearch = ref(true)
+
+/**@type {import('vue').Ref<Number[] | String[]>} */
+const ids = ref([])
 
 /**@type {import('vue').Ref<import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %>[]>} */
 const <%= SnakeFormatHump(SourceTable.Name) %>List = ref([])
@@ -54,25 +231,37 @@ const <%= SnakeFormatHump(SourceTable.Name) %>List = ref([])
 /** 查询 <%= SourceTable.Description %> 列表 */
 async function getList() {
     loading.value = true
-    try {
-        const res = await list<%= SnakeFormatHump(SourceTable.Name, true) %>()
+    list<%= SnakeFormatHump(SourceTable.Name, true) %>(queryParams.value).then((res) => {
         <%= SnakeFormatHump(SourceTable.Name) %>List.value = res.data
-    } catch (error) {
-        /* empty */
-    }
-    loading.value = false
+        total.value = res.data.total
+        loading.value = false
+    })
+}
+
+/** 新增按钮操作 */
+function handleAdd() {
+    proxy.$refs['addOrEdit'].handleAdd()
+}
+
+/**
+ * 修改按钮操作
+ * @param {import('@/api/faAdmin').FaAdmin} row
+ */
+function handleEdit(row) {
+    const _id = row.id
+    proxy.$refs['addOrEdit'].handleEdit(_id)
 }
 
 /**
  * 删除按钮操作
- * @param {import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %>} row
+ * @param {import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %> | Event} row
  */
 function handleDelete(row) {
-    const id = row.<%= SourceTable.PrimaryKey.MemberColumns[0].Name %>
+    const _ids = row.<%= SourceTable.PrimaryKey.MemberColumns[0].Name %> || ids.value
     proxy.$modal
-        .confirm('是否确认删除编号为"' + id + '"的数据项？')
+        .confirm('是否确认删除编号为"' + _ids + '"的数据项？')
         .then(function () {
-            return delFaAdmin({ id })
+            return del<%= SnakeFormatHump(SourceTable.Name, true) %>({ ids: _ids })
         })
         .then(() => {
             getList()
@@ -81,14 +270,25 @@ function handleDelete(row) {
         .catch(() => {})
 }
 
-/** 新增按钮操作 */
-function handleAdd() {
-    proxy.$modal.msgSuccess('新增操作')
+/** 搜索按钮操作 */
+function handleQuery() {
+    queryParams.value.page = 1
+    getList()
 }
 
-/** 修改按钮操作 */
-function handleEdit() {
-    proxy.$modal.msgSuccess('修改操作')
+/** 搜索重置按钮操作 */
+function resetQuery() {
+    proxy.resetForm('queryRef')
+    handleQuery()
+}
+
+/**
+ * 表格前多选框选中数据
+ * @param {import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %>[]} selection
+ */
+function handleSelectionChange(selection) {
+    ids.value = selection.map((item) => item.id)
+    multiple.value = !selection.length
 }
 
 getList()

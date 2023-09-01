@@ -36,7 +36,7 @@
     "password": {
       "label": "密码",
       "add": true,
-      "edit": true,
+      "edit": false,
       "list": false,
       "search": false,
       "required": true,

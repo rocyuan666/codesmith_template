@@ -84,7 +84,7 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
             </el-form-item>
             <% } else if((String)ExtInfo[fieldName]["display"] == "datetime" && (String)ExtInfo[fieldName]["query"] == "BETWEEN") { %>
             <%-- 日期时间 范围 --%>
-            <el-form-item label="<%= ExtInfo[fieldName]["label"] %>">
+            <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">>
                 <%-- ！！！可能需要特殊处理！！！ --%>
                 <el-date-picker v-model="queryParams.query.<%= fieldName %>.value" value-format="YYYY-MM-DD" type="daterange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
             </el-form-item>

@@ -22,8 +22,16 @@ JObject json = JObject.Parse(File.ReadAllText(JsonFile));
 
 // vue3 - 列表
 CodeTemplate vue3IndexTemplate = GetCodeTemplate("\\vue\\index.vue3.cst");
+
 // vue3 - 添加编辑
-CodeTemplate vue3AddOrEditTemplate = GetCodeTemplate("\\vue\\addOrEdit.vue3.cst");
+// CodeTemplate vue3AddOrEditTemplate = GetCodeTemplate("\\vue\\addOrEdit.vue3.cst");
+
+// vue3 - 添加
+CodeTemplate vue3AddTemplate = GetCodeTemplate("\\vue\\add.vue3.cst");
+
+// vue3 - 编辑
+CodeTemplate vue3EditTemplate = GetCodeTemplate("\\vue\\edit.vue3.cst");
+
 // js - api
 CodeTemplate jsApiTemplate = GetCodeTemplate("\\js\\api.cst");
 
@@ -45,8 +53,16 @@ for(int i = 0; i < Tables.Count; i++)
     RenderFileUsingProperties(vue3IndexDirectory, true, ref vue3IndexTemplate, Tables[i], extTableJson);
     
     // vue3 - 添加编辑
-    string vue3AddOrEditDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue\\view\\" + SnakeFormatHump(Tables[i].Name) + "\\addOrEdit.vue";
-    RenderFileUsingProperties(vue3AddOrEditDirectory, true, ref vue3AddOrEditTemplate, Tables[i], extTableJson);
+    // string vue3AddOrEditDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue\\view\\" + SnakeFormatHump(Tables[i].Name) + "\\addOrEdit.vue";
+    // RenderFileUsingProperties(vue3AddOrEditDirectory, true, ref vue3AddOrEditTemplate, Tables[i], extTableJson);
+    
+    // vue3 - 添加
+    string vue3AddDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue\\view\\" + SnakeFormatHump(Tables[i].Name) + "\\add.vue";
+    RenderFileUsingProperties(vue3AddDirectory, true, ref vue3AddTemplate, Tables[i], extTableJson);
+    
+    // vue3 - 编辑
+    string vue3EditDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue\\view\\" + SnakeFormatHump(Tables[i].Name) + "\\edit.vue";
+    RenderFileUsingProperties(vue3EditDirectory, true, ref vue3EditTemplate, Tables[i], extTableJson);
 
     // js - api
     string jsApiDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue\\api\\" + SnakeFormatHump(Tables[i].Name) + ".js";

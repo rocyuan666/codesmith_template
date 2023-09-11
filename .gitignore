@@ -1,0 +1,4 @@
+/out
+/localJson/*
+!/localJson/.gitkeep
+!/localJson/example.json

@@ -1,0 +1,99 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Description="js api模板" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="所基于的表" %>
+<%@ Property Name="ExtInfo" Type="CodeSmith.Engine.Json.Linq.JToken" Category="Context" Description="表额外数据" %>
+
+<!-- #include file="..\\common\\utils.cst" -->
+<!-- #include file="..\\common\\mapTypeTransform.cst" -->
+import request from '@/utils/request'
+import ActionResult from '@/utils/ActionResult'
+
+<%--
+    数据模型
+--%>
+/**
+ * @typedef <%= SnakeFormatHump(SourceTable.Name, true) %> - <%= SourceTable.Description %>
+ <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+ * @property {<%= MysqlTypeToJsType(SourceTable.Columns[i].NativeType) %>} <%= SourceTable.Columns[i].Name %> - <%= ExtInfo[SourceTable.Columns[i].Name]["label"] %>
+ <% } %>
+ */
+
+<%--
+    api接口请求
+--%>
+/**
+ * 查询 <%= SourceTable.Description %> 列表
+ * @param {import('@/views/<%= SnakeFormatHump(SourceTable.Name) %>/index.vue').QueryParams} sendData
+ * @returns {Promise<ActionResult<{rows: <%= SnakeFormatHump(SourceTable.Name, true) %>[], total: Number}>>}
+ */
+export function list<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
+    /**@type {import('axios').AxiosRequestConfig} */
+    const sendObj = {
+        url: '/api/<%= SnakeFormatHump(SourceTable.Name, true) %>/list',
+        method: 'GET',
+        params: sendData,
+    }
+    return request(sendObj)
+}
+
+/**
+ * 查询 <%= SourceTable.Description %> 详细
+ * @param {{id: Number}} sendData
+ * @returns {Promise<ActionResult<<%= SnakeFormatHump(SourceTable.Name, true) %>>>}
+ */
+export function detail<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
+    /**@type {import('axios').AxiosRequestConfig} */
+    const sendObj = {
+        url: '/api/<%= SnakeFormatHump(SourceTable.Name, true) %>/detail',
+        method: 'GET',
+        params: sendData,
+    }
+    return request(sendObj)
+}
+
+/**
+ * 新增 <%= SourceTable.Description %>
+ * @param {{row: <%= SnakeFormatHump(SourceTable.Name, true) %> | Object}} sendData
+ * @returns {Promise<ActionResult<Boolean>>}
+ */
+export function add<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
+    /**@type {import('axios').AxiosRequestConfig} */
+    const sendObj = {
+        url: '/api/<%= SnakeFormatHump(SourceTable.Name, true) %>/add',
+        method: 'POST',
+        data: sendData,
+    }
+    return request(sendObj)
+}
+
+/**
+ * 修改 <%= SourceTable.Description %>
+ * @param {{row: <%= SnakeFormatHump(SourceTable.Name, true) %> | Object}} sendData
+ * @returns {Promise<ActionResult<<%= SnakeFormatHump(SourceTable.Name, true) %>>>}
+ */
+export function edit<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
+    /**@type {import('axios').AxiosRequestConfig} */
+    const sendObj = {
+        url: '/api/<%= SnakeFormatHump(SourceTable.Name, true) %>/edit',
+        method: 'POST',
+        data: sendData,
+    }
+    return request(sendObj)
+}
+
+/**
+ * 删除 <%= SourceTable.Description %>
+ * @param {{ids: Number | Number[]}} sendData
+ * @returns {Promise<ActionResult<Number>>}
+ */
+export function del<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
+    /**@type {import('axios').AxiosRequestConfig} */
+    const sendObj = {
+        url: '/api/<%= SnakeFormatHump(SourceTable.Name, true) %>/del',
+        method: 'POST',
+        data: sendData,
+    }
+    return request(sendObj)
+}

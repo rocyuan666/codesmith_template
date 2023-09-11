@@ -1,0 +1,67 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Description="js api模板" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+<%@ Property Name="Tables" Type="SchemaExplorer.TableSchemaCollection" Category="Context" Description="表集合" %>
+
+<!-- #include file="..\\common\\utils.cst" -->
+<!-- #include file="..\\common\\mapTypeTransform.cst" -->
+import Layout from '@/layout'
+
+export const genRouters = [
+    {
+        path: '/cic',
+        name: 'Cic',
+        redirect: 'noRedirect',
+        hidden: false,
+        component: Layout,
+        alwaysShow: true,
+        meta: {
+            icon: 'Grid',
+            link: null,
+            noCache: false,
+            title: '管理页面',
+        },
+        children: [
+            {
+                path: 'user',
+                name: 'User',
+                hidden: false,
+                component: () => import('@/views/user'),
+                meta: {
+                    icon: 'Menu',
+                    link: null,
+                    noCache: false,
+                    title: '用户',
+                },
+            },
+            {
+                path: 'permission',
+                name: 'Permission',
+                hidden: false,
+                component: () => import('@/views/permission'),
+                meta: {
+                    icon: 'Menu',
+                    link: null,
+                    noCache: false,
+                    title: '用户权限',
+                },
+            },
+        <% for(int i = 0; i < Tables.Count; i++) { %>
+            <% if(Tables[i].Name == "user") continue; %>
+            {
+                path: '<%= SnakeFormatHump(Tables[i].Name) %>',
+                name: '<%= SnakeFormatHump(Tables[i].Name, true) %>',
+                hidden: false,
+                component: () => import('@/views/<%= SnakeFormatHump(Tables[i].Name) %>'),
+                meta: {
+                    icon: 'Menu',
+                    link: null,
+                    noCache: false,
+                    title: '<%= Tables[i].Description == "" ? SnakeFormatHump(Tables[i].Name) : Tables[i].Description %>',
+                },
+            },
+        <% } %>
+        ],
+    },
+]

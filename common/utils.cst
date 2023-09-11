@@ -1,0 +1,99 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Description="生成器工具方法" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="System.IO" %>
+<%@ Import Namespace="System.Text" %>
+<%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
+
+<script runat="template">
+// json 数据格式修改
+public JObject jsonFormat(JToken json, String keyField) {
+    JObject newJson = new JObject();
+    for(int i = 0; i < ((JArray)json).Count; i++){
+        newJson.Add((String)json[i][keyField], json[i]);
+    }
+    return newJson;
+}
+
+// 蛇形命名转换大小驼峰命名处理
+public string SnakeFormatHump(string snakeName, bool isBig = false)
+{
+    string newSnakeName = "";
+    string[] snakeNames = snakeName.Split("_".ToCharArray());
+    for(int i = 0; i < snakeNames.Length; i++)
+    {
+        string nameSplitFormat = snakeNames[i].Substring(0, 1).ToUpper() + snakeNames[i].Substring(1);
+        if(isBig || i > 0)
+        {
+            snakeNames[i] = nameSplitFormat;
+        }
+        newSnakeName += snakeNames[i];
+    }
+    return newSnakeName;
+}
+
+// 获取模版
+public  CodeTemplate GetCodeTemplate(string TemplateName)
+{
+	CodeTemplateCompiler compiler = new CodeTemplateCompiler(this.CodeTemplateInfo.DirectoryName+TemplateName); 
+	compiler.CodeTemplateInfo.ToString();
+	compiler.Compile(); 
+	if (compiler.Errors.Count == 0) 
+	{ 
+		return compiler.CreateInstance();
+	} 
+	else 
+	{ 
+		StringBuilder errorMessage = new StringBuilder();
+		for (int i = 0; i < compiler.Errors.Count; i++) 
+		{
+			errorMessage.Append(compiler.Errors[i].ToString()).Append("\n");
+		} 
+		throw new ApplicationException(errorMessage.ToString());
+	} 
+}
+
+// 解析模版 (不传属性值)
+public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTemplate template)
+{
+	if( overrite || (!File.Exists(fullPath)) )
+	{
+		CopyPropertiesTo(template);
+		template.RenderToFile(fullPath, overrite);
+	}
+}
+
+// 解析模版 (传表属性值)
+public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTemplate template, TableSchema SourceTable)
+{
+	if( overrite || (!File.Exists(fullPath)) )
+	{
+		CopyPropertiesTo(template);
+		template.SetProperty("SourceTable",SourceTable);
+		template.RenderToFile(fullPath, overrite);
+	}
+}
+
+// 解析模版 (传表集合属性值)
+public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTemplate template, TableSchemaCollection Tables)
+{
+	if( overrite || (!File.Exists(fullPath)) )
+	{
+		CopyPropertiesTo(template);
+		template.SetProperty("Tables",Tables);
+		template.RenderToFile(fullPath, overrite);
+	}
+}
+
+// 解析模版 (传表和额外数据属性值)
+public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTemplate template, TableSchema SourceTable, JToken tableExtInfo)
+{
+	if( overrite || (!File.Exists(fullPath)) )
+	{
+		CopyPropertiesTo(template);
+		template.SetProperty("SourceTable",SourceTable);
+        template.SetProperty("ExtInfo",tableExtInfo);
+		template.RenderToFile(fullPath, overrite);
+	}
+}
+</script>

@@ -1,0 +1,17 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Description="类型转换" %>
+<%@ Map Name="DbTypeToJavaScript" Src="DbType-JavaScript.csmap" %>
+<%@ Map Name="MysqlTypeToJavascript" Src="MysqlType-Javascript.csmap" %>
+
+<script runat="template">
+// DbType类型 转换 js类型
+public string DbTypeToJsType(DbType type)
+{
+    return DbTypeToJavaScript[type.ToString()];
+}
+
+// mysql类型 转换 js类型
+public string MysqlTypeToJsType(String type)
+{
+    return MysqlTypeToJavascript[type];
+}
+</script>

@@ -48,7 +48,7 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
 %>
 <template>
     <!-- draggable -->
-    <el-dialog :title="title" v-model="open" width="800px" :close-on-click-modal="false" append-to-body>
+    <el-dialog :title="title" v-model="open" width="1200px" :close-on-click-modal="false" append-to-body>
         <el-form ref="<%= SnakeFormatHump(SourceTable.Name) %>Ref" :model="form.row" :rules="rules" label-width="100px">
             <%-- 循环字段 --%>
             <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>

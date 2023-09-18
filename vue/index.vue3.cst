@@ -23,7 +23,7 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
 
 #endregion
 
-#region 字典类型收集
+#region 字典标识收集 去除重复字典标识用作js变量
 
 List<String> dicts = new List<String>();
 
@@ -68,7 +68,7 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
             <% } else if((String)ExtInfo[fieldName]["display"] == "select") { %>
             <%-- 下拉框 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
-                <el-select v-model="queryParams.query.<%= fieldName %>.value" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>" clearable>
+                <el-select v-model="queryParams.query.<%= fieldName %>.value" placeholder="<%= ExtInfo[fieldName]["label"] %>" clearable>
                     <% if((String)ExtInfo[fieldName]["dict"] == "" || (String)ExtInfo[fieldName]["dict"] == "0") { %>
                     <el-option label="请手动写入选项 或者 选择字典生成" value="" />
                     <% } else { %>
@@ -101,12 +101,12 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
             <% } else if((String)ExtInfo[fieldName]["display"] == "datetime" && (String)ExtInfo[fieldName]["query"] != "BETWEEN") { %>
             <%-- 日期时间 非范围 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
-                <el-date-picker clearable v-model="queryParams.query.<%= fieldName %>.value" type="date" value-format="YYYY-MM-DD" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>"></el-date-picker>
+                <el-date-picker clearable v-model="queryParams.query.<%= fieldName %>.value" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>"></el-date-picker>
             </el-form-item>
             <% } else if((String)ExtInfo[fieldName]["display"] == "datetime" && (String)ExtInfo[fieldName]["query"] == "BETWEEN") { %>
             <%-- 日期时间 范围 --%>
-            <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">>
-                <el-date-picker v-model="queryParams.query.<%= fieldName %>.value" value-format="YYYY-MM-DD" type="daterange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
+            <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+                <el-date-picker v-model="queryParams.query.<%= fieldName %>.value" type="datetimerange" value-format="YYYY-MM-DD HH:mm:ss" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
             </el-form-item>
             <% } %>
             <% } %>
@@ -118,12 +118,12 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
         </el-form>
         <% } %>
         <!-- 操作按钮 -->
-        <el-row :gutter="10">
-            <el-col :span="1.5" class="mb8">
-                <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.add']" v-autoBlur>新增</el-button>
+        <el-row :gutter="10" class="mb8" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.add', '<%= SnakeFormatHump(SourceTable.Name, true) %>.del']">
+            <el-col :span="1.5" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.add']">
+                <el-button type="primary" plain icon="Plus" @click="handleAdd" v-autoBlur>新增</el-button>
             </el-col>
-            <el-col :span="1.5">
-                <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.del']" v-autoBlur>删除</el-button>
+            <el-col :span="1.5" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.del']">
+                <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-autoBlur>删除</el-button>
             </el-col>
             <right-toolbar :search="<%= isSearch.ToString().ToLower() %>" v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
         </el-row>
@@ -149,7 +149,7 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
             <% } else { %>
             <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>">
                 <template #default="{ row }">
-                    <dict-tag :options="<%= ExtInfo[fieldName]["dict"] %>" :value="row.<%= fieldName %>"/>
+                    <dict-tag :options="<%= ExtInfo[fieldName]["dict"] %>" :value="row.<%= fieldName %>" />
                 </template>
             </el-table-column>
             <% } %>
@@ -160,7 +160,7 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
             <% } else { %>
             <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>">
                 <template #default="{ row }">
-                    <dict-tag :options="<%= ExtInfo[fieldName]["dict"] %>" :value="row.<%= fieldName %>"/>
+                    <dict-tag :options="<%= ExtInfo[fieldName]["dict"] %>" :value="row.<%= fieldName %>" />
                 </template>
             </el-table-column>
             <% } %>
@@ -171,7 +171,7 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
             <% } else { %>
             <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>">
                 <template #default="{ row }">
-                    <dict-tag :options="<%= ExtInfo[fieldName]["dict"] %>" :value="row.<%= fieldName %> ? row.<%= fieldName %>.split(',') : []"/>
+                    <dict-tag :options="<%= ExtInfo[fieldName]["dict"] %>" :value="row.<%= fieldName %> ? row.<%= fieldName %>.split(',') : []" />
                 </template>
             </el-table-column>
             <% } %>
@@ -182,7 +182,7 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
             <%-- 图片上传 --%>
             <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" width="100">
                 <template #default="{ row }">
-                    <image-preview :src="row.<%= fieldName %>" :width="50" :height="50"/>
+                    <image-preview :src="row.<%= fieldName %>" :width="50" :height="50" />
                 </template>
             </el-table-column>
             <% } %>
@@ -205,13 +205,14 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
 </template>
 
 <script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>">
-import { ref, getCurrentInstance, reactive, toRefs } from 'vue'
+import { ref, getCurrentInstance, reactive, toRefs, provide } from 'vue'
 import { list<%= SnakeFormatHump(SourceTable.Name, true) %>, del<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
 import Add from './add.vue'
 import Edit from './edit.vue'
 
 const { proxy } = getCurrentInstance()
 <%
+// 字典 js变量 js方法参数 处理
 String dictsDot = "";
 String dictsArgs = "";
 for(int i = 0; i < dicts.Count; i++)
@@ -227,6 +228,13 @@ for(int i = 0; i < dicts.Count; i++)
 %>
 <% if(dictsDot != "") { %>
 const { <%= dictsDot %> } = proxy.useDict(<%= dictsArgs %>)
+<% } %>
+<% if(dicts.Count != 0) { %>
+
+// 注入字典数据
+<% for(int i = 0; i < dicts.Count; i++) { %>
+provide('<%= dicts[i] %>', <%= dicts[i] %>)
+<% } %>
 <% } %>
 
 /**
@@ -308,8 +316,8 @@ function handleAdd() {
  * @param {import('@/api/faAdmin').FaAdmin} row
  */
 function handleEdit(row) {
-    const _id = row.id
-    proxy.$refs['editRef'].handleEdit(_id)
+    const newRow = JSON.parse(JSON.stringify(row))
+    proxy.$refs['editRef'].handleEdit(newRow)
 }
 
 /**

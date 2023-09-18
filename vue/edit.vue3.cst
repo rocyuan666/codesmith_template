@@ -25,7 +25,7 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
 
 #endregion
 
-#region 字典类型收集
+#region 字典标识收集 去除重复字典标识用作js变量
 
 List<String> dicts = new List<String>();
 
@@ -47,8 +47,9 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
 #endregion
 %>
 <template>
-    <el-dialog :title="title" v-model="open" width="800px" append-to-body draggable>
-        <el-form ref="<%= SnakeFormatHump(SourceTable.Name) %>Ref" :model="form.row" :rules="rules" label-width="80px">
+    <!-- draggable -->
+    <el-dialog :title="title" v-model="open" width="800px" :close-on-click-modal="false" append-to-body>
+        <el-form ref="<%= SnakeFormatHump(SourceTable.Name) %>Ref" :model="form.row" :rules="rules" label-width="100px">
             <%-- 循环字段 --%>
             <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
             <%
@@ -77,7 +78,7 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
             <% } else if((String)ExtInfo[fieldName]["display"] == "select") { %>
             <%-- 下拉框 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="<%= fieldName %>">
-                <el-select v-model="form.row.<%= fieldName %>" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>">
+                <el-select v-model="form.row.<%= fieldName %>" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>" clearable>
                     <% if((String)ExtInfo[fieldName]["dict"] == "" || (String)ExtInfo[fieldName]["dict"] == "0") { %>
                     <el-option label="请手动写入选项 或者 选择字典生成" value="" />
                     <% } else { %>
@@ -110,17 +111,17 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
             <% } else if((String)ExtInfo[fieldName]["display"] == "datetime") { %>
             <%-- 日期时间 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="<%= fieldName %>">
-                <el-date-picker clearable v-model="form.row.<%= fieldName %>" type="date" value-format="YYYY-MM-DD" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>"></el-date-picker>
+                <el-date-picker clearable v-model="form.row.<%= fieldName %>" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>"></el-date-picker>
             </el-form-item>
             <% } else if((String)ExtInfo[fieldName]["display"] == "imageUpload") { %>
             <%-- 图片上传 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="<%= fieldName %>">
-                <image-upload v-model="form.row.<%= fieldName %>"/>
+                <image-upload v-model="form.row.<%= fieldName %>" />
             </el-form-item>
             <% } else if((String)ExtInfo[fieldName]["display"] == "fileUpload") { %>
             <%-- 文件上传 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="<%= fieldName %>">
-                <file-upload v-model="form.row.<%= fieldName %>"/>
+                <file-upload v-model="form.row.<%= fieldName %>" />
             </el-form-item>
             <% } else if((String)ExtInfo[fieldName]["display"] == "editor") { %>
             <%-- 富文本控件 --%>
@@ -141,26 +142,16 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
 </template>
 
 <script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>Edit">
-import { ref, getCurrentInstance, toRefs, reactive } from 'vue'
-import { edit<%= SnakeFormatHump(SourceTable.Name, true) %>, detail<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
+import { ref, getCurrentInstance, toRefs, reactive, inject } from 'vue'
+import { edit<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
 
 const { proxy } = getCurrentInstance()
-<%
-String dictsDot = "";
-String dictsArgs = "";
-for(int i = 0; i < dicts.Count; i++)
-{
-    if(i != dicts.Count - 1){
-        dictsDot += dicts[i] + ", ";
-        dictsArgs += "'" + dicts[i] + "'" + ", ";
-    }else {
-        dictsDot += dicts[i];
-        dictsArgs += "'" + dicts[i] + "'";
-    }
-}
-%>
-<% if(dictsDot != "") { %>
-const { <%= dictsDot %> } = proxy.useDict(<%= dictsArgs %>)
+<% if(dicts.Count != 0) { %>
+
+// 注入字典数据
+<% for(int i = 0; i < dicts.Count; i++) { %>
+const <%= dicts[i] %> = inject('<%= dicts[i] %>', () => [])
+<% } %>
 <% } %>
 
 /**
@@ -170,7 +161,6 @@ const { <%= dictsDot %> } = proxy.useDict(<%= dictsArgs %>)
  * @property {import('@/api/faAdmin').FaAdmin | Object} form.row
  * @property {import('element-plus').FormRules<import('@/api/faAdmin').FaAdmin>} rules
  */
-
 
 /**@type {UnwrapNestedRefs<TargetData>} */
 const data = reactive({
@@ -265,15 +255,13 @@ function reset() {
 
 /**
  * 修改按钮操作
- * @param {Number | String} id
+ * @param {import('@/api/faAdmin').FaAdmin} row
  */
-function handleEdit(id) {
+function handleEdit(row) {
     reset()
-    detail<%= SnakeFormatHump(SourceTable.Name, true) %>({ id: id }).then((res) => {
-        form.value.row = res.data
-        open.value = true
-        title.value = '修改'
-    })
+    form.value.row = row
+    open.value = true
+    title.value = '修改'
 }
 
 defineExpose({ handleEdit })

@@ -1,0 +1,62 @@
+{
+  "config_table": {
+    "sub_table": "",
+    "sub_table_foreign_key": ""
+  },
+  "config_table_column": {
+    "sub_table": "",
+    "sub_table_foreign_key": ""
+  },
+  "fa_admin": {
+    "sub_table": "",
+    "sub_table_foreign_key": ""
+  },
+  "test": {
+    "sub_table": "",
+    "sub_table_foreign_key": ""
+  },
+  "user": {
+    "sub_table": "",
+    "sub_table_foreign_key": ""
+  },
+  "user_permission": {
+    "sub_table": "",
+    "sub_table_foreign_key": ""
+  },
+  "user_token": {
+    "sub_table": "",
+    "sub_table_foreign_key": ""
+  },
+  "config": {
+    "sub_table": "",
+    "sub_table_foreign_key": ""
+  },
+  "dict": {
+    "sub_table": "",
+    "sub_table_foreign_key": ""
+  },
+  "dict_detail": {
+    "sub_table": "",
+    "sub_table_foreign_key": ""
+  },
+  "asphalt_base_config": {
+    "sub_table": "",
+    "sub_table_foreign_key": ""
+  },
+  "asphalt_base_goods": {
+    "sub_table": "",
+    "sub_table_foreign_key": ""
+  },
+  "asphalt_base_goods_type": {
+    "sub_table": "",
+    "sub_table_foreign_key": ""
+  },
+  "asphalt_base_tank": {
+    "sub_table": "",
+    "sub_table_foreign_key": ""
+  },
+  "asphalt_base_warehouse": {
+    "sub_table": "",
+    "sub_table_foreign_key": ""
+  }
+}

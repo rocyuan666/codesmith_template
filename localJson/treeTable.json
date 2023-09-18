@@ -1,0 +1,77 @@
+{
+  "config_table": {
+    "code_field": "",
+    "name_field": "",
+    "parent_code_field": ""
+  },
+  "config_table_column": {
+    "code_field": "",
+    "name_field": "",
+    "parent_code_field": ""
+  },
+  "fa_admin": {
+    "code_field": "",
+    "name_field": "",
+    "parent_code_field": ""
+  },
+  "test": {
+    "code_field": "",
+    "name_field": "",
+    "parent_code_field": ""
+  },
+  "user": {
+    "code_field": "",
+    "name_field": "",
+    "parent_code_field": ""
+  },
+  "user_permission": {
+    "code_field": "",
+    "name_field": "",
+    "parent_code_field": ""
+  },
+  "user_token": {
+    "code_field": "",
+    "name_field": "",
+    "parent_code_field": ""
+  },
+  "config": {
+    "code_field": "",
+    "name_field": "",
+    "parent_code_field": ""
+  },
+  "dict": {
+    "code_field": "",
+    "name_field": "",
+    "parent_code_field": ""
+  },
+  "dict_detail": {
+    "code_field": "",
+    "name_field": "",
+    "parent_code_field": ""
+  },
+  "asphalt_base_config": {
+    "code_field": "",
+    "name_field": "",
+    "parent_code_field": ""
+  },
+  "asphalt_base_goods": {
+    "code_field": "",
+    "name_field": "",
+    "parent_code_field": ""
+  },
+  "asphalt_base_goods_type": {
+    "code_field": "",
+    "name_field": "",
+    "parent_code_field": ""
+  },
+  "asphalt_base_tank": {
+    "code_field": "",
+    "name_field": "",
+    "parent_code_field": ""
+  },
+  "asphalt_base_warehouse": {
+    "code_field": "",
+    "name_field": "",
+    "parent_code_field": ""
+  }
+}

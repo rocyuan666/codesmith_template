@@ -1,0 +1,129 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Description="js api模板" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+<%@ Property Name="Tables" Type="SchemaExplorer.TableSchemaCollection" Category="Context" Description="表集合" %>
+
+<!-- #include file="..\\common\\utils.cst" -->
+<!-- #include file="..\\common\\mapTypeTransform.cst" -->
+export const genRouters = [
+    {
+        path: '/test',
+        name: 'Test',
+        redirect: 'noRedirect',
+        hidden: false,
+        component: () => import('@/layout'),
+        alwaysShow: true,
+        meta: {
+            icon: 'Grid',
+            link: null,
+            noCache: false,
+            title: '测试静态页',
+        },
+        children: [
+            {
+                path: 'faAdmin',
+                name: 'FaAdmin',
+                hidden: false,
+                component: () => import('@/views/faAdmin'),
+                meta: {
+                    icon: 'Menu',
+                    link: null,
+                    noCache: false,
+                    title: '管理员测试表',
+                },
+            },
+            {
+                path: 'testSubTable',
+                name: 'TestSubTable',
+                hidden: false,
+                component: () => import('@/views/testSubTable'),
+                meta: {
+                    icon: 'Menu',
+                    link: null,
+                    noCache: false,
+                    title: '测试子表',
+                },
+            },
+            {
+                path: 'testTree',
+                name: 'TestTree',
+                hidden: false,
+                component: () => import('@/views/testTree'),
+                meta: {
+                    icon: 'Menu',
+                    link: null,
+                    noCache: false,
+                    title: '测试树表',
+                },
+            },
+        ],
+    },
+    {
+        path: '/cic',
+        name: 'Cic',
+        redirect: 'noRedirect',
+        hidden: false,
+        component: () => import('@/layout'),
+        alwaysShow: true,
+        meta: {
+            icon: 'Grid',
+            link: null,
+            noCache: false,
+            title: '管理页面',
+        },
+        children: [
+            {
+                path: 'user',
+                name: 'User',
+                hidden: false,
+                component: () => import('@/views/user'),
+                meta: {
+                    icon: 'Menu',
+                    link: null,
+                    noCache: false,
+                    title: '用户',
+                },
+            },
+            {
+                path: 'permission',
+                name: 'Permission',
+                hidden: false,
+                component: () => import('@/views/permission'),
+                meta: {
+                    icon: 'Menu',
+                    link: null,
+                    noCache: false,
+                    title: '用户权限',
+                },
+            },
+            /*{
+                path: 'organize',
+                name: 'Organize',
+                hidden: false,
+                component: () => import('@/views/organize'),
+                meta: {
+                    icon: 'Menu',
+                    link: null,
+                    noCache: false,
+                    title: '组织结构',
+                },
+            },*/
+        <% for(int i = 0; i < Tables.Count; i++) { %>
+            <% if(Tables[i].Name == "user" || Tables[i].Name == "fa_admin") continue; %>
+            {
+                path: '<%= SnakeFormatHump(Tables[i].Name) %>',
+                name: '<%= SnakeFormatHump(Tables[i].Name, true) %>',
+                hidden: false,
+                component: () => import('@/views/<%= SnakeFormatHump(Tables[i].Name) %>'),
+                meta: {
+                    icon: 'Menu',
+                    link: null,
+                    noCache: false,
+                    title: '<%= Tables[i].Description == "" ? SnakeFormatHump(Tables[i].Name) : Tables[i].Description %>',
+                },
+            },
+        <% } %>
+        ],
+    },
+]

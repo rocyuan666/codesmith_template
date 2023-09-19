@@ -2,15 +2,65 @@
 <%@ Assembly Name="SchemaExplorer" %>
 <%@ Import Namespace="SchemaExplorer" %>
 <%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
+<%@ Import Namespace="System.Collections.Generic" %>
 
 <%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="所基于的表" %>
-<%@ Property Name="ExtInfo" Type="JToken" Category="Context" Description="表额外数据" %>
+<%@ Property Name="ExtJson" Type="JToken" Category="Context" Description="表额外数据" %>
 
 <!-- #include file="..\\common\\utils.cst" -->
 <!-- #include file="..\\common\\mapTypeTransform.cst" -->
+<%
+
+// 表字段额外数据
+JToken ExtInfo = ExtJson["field"];
+// 子表名称
+String subTableName = (String)ExtJson["sub_table"];
+// 子表字段额外数据
+JToken ExtSubTableInfo = null;
+if(subTableName != "") {
+    ExtSubTableInfo = ExtJson["subTableJson"]["field"];
+}
+
+#region 添加是否有配置校验
+
+Boolean isAddCheck = false;
+for(int i = 0; i < SourceTable.Columns.Count; i++)
+{
+    string fieldName = SourceTable.Columns[i].Name;
+    if((Boolean)ExtInfo[fieldName]["add"] == true && (Boolean)ExtInfo[fieldName]["required"] == true)
+    {
+        isAddCheck = true;
+        break;
+    }
+}
+
+#endregion
+
+#region 字典标识收集 去除重复字典标识用作js变量
+
+List<String> dicts = new List<String>();
+
+for(int i = 0; i < SourceTable.Columns.Count; i++)
+{
+    String tableName = SourceTable.Columns[i].Name;
+    if((String)ExtInfo[tableName]["dict"] != "" && (String)ExtInfo[tableName]["dict"] != "0")
+    {
+        if((String)ExtInfo[tableName]["display"] == "select" || (String)ExtInfo[tableName]["display"] == "radio" || (String)ExtInfo[tableName]["display"] == "checkbox")
+        {
+            if(!dicts.Contains((String)ExtInfo[tableName]["dict"]))
+            {
+                dicts.Add((String)ExtInfo[tableName]["dict"]);
+            }
+        }
+    }
+}
+
+#endregion
+%>
 <template>
-    <el-dialog :title="title" v-model="open" width="800px" append-to-body>
-        <el-form ref="<%= SnakeFormatHump(SourceTable.Name) %>Ref" :model="form.row" :rules="rules" label-width="80px">
+    <!-- draggable -->
+    <el-dialog :title="title" v-model="open" width="1200px" :close-on-click-modal="false" append-to-body>
+        <el-form ref="<%= SnakeFormatHump(SourceTable.Name) %>Ref" :model="form.row" :rules="rules" label-width="100px">
             <%-- 循环字段 --%>
             <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
             <%
@@ -39,8 +89,8 @@
             <% } else if((String)ExtInfo[fieldName]["display"] == "select") { %>
             <%-- 下拉框 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="<%= fieldName %>">
-                <el-select v-model="form.row.<%= fieldName %>" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>">
-                    <% if((String)ExtInfo[fieldName]["dict"] == "") { %>
+                <el-select v-model="form.row.<%= fieldName %>" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>" clearable>
+                    <% if((String)ExtInfo[fieldName]["dict"] == "" || (String)ExtInfo[fieldName]["dict"] == "0") { %>
                     <el-option label="请手动写入选项 或者 选择字典生成" value="" />
                     <% } else { %>
                     <el-option v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :value="dict.value" />
@@ -51,7 +101,7 @@
             <%-- 单选框 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="<%= fieldName %>">
                 <el-radio-group v-model="form.row.<%= fieldName %>">
-                    <% if((String)ExtInfo[fieldName]["dict"] == "") { %>
+                    <% if((String)ExtInfo[fieldName]["dict"] == "" || (String)ExtInfo[fieldName]["dict"] == "0") { %>
                     <el-radio label="1">请手动写入选项 或者 选择字典生成</el-radio>
                     <% } else { %>
                     <el-radio v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.value">{{dict.label}}</el-radio>
@@ -62,7 +112,7 @@
             <%-- 复选框 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="<%= fieldName %>">
                 <el-checkbox-group v-model="form.row.<%= fieldName %>">
-                    <% if((String)ExtInfo[fieldName]["dict"] == "") { %>
+                    <% if((String)ExtInfo[fieldName]["dict"] == "" || (String)ExtInfo[fieldName]["dict"] == "0") { %>
                     <el-checkbox label="1">请手动写入选项 或者 选择字典生成</el-checkbox>
                     <% } else { %>
                     <el-checkbox v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.value">{{dict.label}}</el-checkbox>
@@ -72,17 +122,17 @@
             <% } else if((String)ExtInfo[fieldName]["display"] == "datetime") { %>
             <%-- 日期时间 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="<%= fieldName %>">
-                <el-date-picker clearable v-model="form.row.<%= fieldName %>" type="date" value-format="YYYY-MM-DD" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>"></el-date-picker>
+                <el-date-picker clearable v-model="form.row.<%= fieldName %>" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>"></el-date-picker>
             </el-form-item>
             <% } else if((String)ExtInfo[fieldName]["display"] == "imageUpload") { %>
             <%-- 图片上传 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="<%= fieldName %>">
-                <image-upload v-model="form.row.<%= fieldName %>"/>
+                <image-upload v-model="form.row.<%= fieldName %>" />
             </el-form-item>
             <% } else if((String)ExtInfo[fieldName]["display"] == "fileUpload") { %>
             <%-- 文件上传 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="<%= fieldName %>">
-                <file-upload v-model="form.row.<%= fieldName %>"/>
+                <file-upload v-model="form.row.<%= fieldName %>" />
             </el-form-item>
             <% } else if((String)ExtInfo[fieldName]["display"] == "editor") { %>
             <%-- 富文本控件 --%>
@@ -95,53 +145,32 @@
         </el-form>
         <template #footer>
             <div class="dialog-footer">
-                <el-button type="primary" @click="submitForm">确 定</el-button>
-                <el-button @click="cancel">取 消</el-button>
+                <el-button type="primary" @click="submitForm" v-autoBlur>确 定</el-button>
+                <el-button @click="cancel" v-autoBlur>取 消</el-button>
             </div>
         </template>
     </el-dialog>
 </template>
 
 <script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>Add">
-import { ref, getCurrentInstance, toRefs, reactive } from 'vue'
+import { ref, getCurrentInstance, toRefs, reactive, inject } from 'vue'
 import { add<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
 
 const { proxy } = getCurrentInstance()
+<% if(dicts.Count != 0) { %>
 
-/**
- * 验证规则项 类型
- * @typedef RulesItem
- * @property {Boolean} required
- * @property {String} message
- * @property {'blur' | 'change'} trigger
- */
-
-/**
- * 验证规则 类型
- * @typedef Rules
-<% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
-<%
-    // 字段名
-    String fieldName = SourceTable.Columns[i].Name;
-    // 字段是否是主键
-    Boolean isPK = SourceTable.PrimaryKey.MemberColumns[0].Name == fieldName;
-    if(isPK)
-    {
-        continue;
-    }
-%>
-<% if((Boolean)ExtInfo[fieldName]["add"] == true && (Boolean)ExtInfo[fieldName]["required"] == true) { %>
- * @property {RulesItem[]} <%= fieldName %>
+// 注入字典数据
+<% for(int i = 0; i < dicts.Count; i++) { %>
+const <%= dicts[i] %> = inject('<%= dicts[i] %>', () => [])
 <% } %>
 <% } %>
- */
 
 /**
  * 原data 类型
  * @typedef TargetData
  * @property {Object} form
- * @property {import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %> | Object} form.row
- * @property {Object<Rules>} rules
+ * @property {import('@/api/faAdmin').FaAdmin | Object} form.row
+ * @property {import('element-plus').FormRules<import('@/api/faAdmin').FaAdmin>} rules
  */
 
 /**@type {UnwrapNestedRefs<TargetData>} */
@@ -149,6 +178,7 @@ const data = reactive({
     form: {
         row: {},
     },
+<% if(isAddCheck) { %>
     rules: {
         <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
         <%
@@ -166,6 +196,9 @@ const data = reactive({
         <% } %>
         <% } %>
     },
+<% } else { %>
+    rules: {},
+<% } %>
 })
 
 /**@type {ToRef<UnwrapNestedRefs<TargetData>["form"]>} */

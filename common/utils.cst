@@ -64,7 +64,7 @@ public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTe
 }
 
 // 解析模版 (传表属性值)
-public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTemplate template,TableSchema SourceTable)
+public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTemplate template, TableSchema SourceTable)
 {
 	if( overrite || (!File.Exists(fullPath)) )
 	{
@@ -74,14 +74,25 @@ public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTe
 	}
 }
 
+// 解析模版 (传表集合属性值)
+public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTemplate template, TableSchemaCollection Tables)
+{
+	if( overrite || (!File.Exists(fullPath)) )
+	{
+		CopyPropertiesTo(template);
+		template.SetProperty("Tables",Tables);
+		template.RenderToFile(fullPath, overrite);
+	}
+}
+
 // 解析模版 (传表和额外数据属性值)
-public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTemplate template,TableSchema SourceTable, JToken tableExtInfo)
+public void RenderFileUsingProperties(string fullPath, bool overrite, ref CodeTemplate template, TableSchema SourceTable, JToken tableExtInfo)
 {
 	if( overrite || (!File.Exists(fullPath)) )
 	{
 		CopyPropertiesTo(template);
 		template.SetProperty("SourceTable",SourceTable);
-        template.SetProperty("ExtInfo",tableExtInfo);
+        template.SetProperty("ExtJson",tableExtInfo);
 		template.RenderToFile(fullPath, overrite);
 	}
 }

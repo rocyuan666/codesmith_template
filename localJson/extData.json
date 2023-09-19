@@ -1,0 +1,1826 @@
+{
+  "config_table": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "name": {
+        "label": "表名称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "status": {
+        "label": "状态 0-正常 1-不更新",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "comment": {
+        "label": "注释",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "extra": {
+        "label": "表详情",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "update_time": {
+        "label": "修改时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      }
+    }
+  },
+  "config_table_column": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": "true",
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": "0"
+      },
+      "table_name": {
+        "label": "表名称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "name": {
+        "label": "字段名称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "select",
+        "dict": "sex"
+      },
+      "status": {
+        "label": "状态 0-正常 1-不更新",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": "status"
+      },
+      "type": {
+        "label": "类型",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "comment": {
+        "label": "注释",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "extra": {
+        "label": "字段详情",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "update_time": {
+        "label": "修改时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      }
+    }
+  },
+  "fa_admin": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": "0"
+      },
+      "username": {
+        "label": "用户名",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": "true",
+        "required": "true",
+        "query": "LIKE",
+        "display": "input",
+        "dict": 0
+      },
+      "nickname": {
+        "label": "昵称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": "true",
+        "required": "true",
+        "query": "LIKE",
+        "display": "input",
+        "dict": "0"
+      },
+      "password": {
+        "label": "密码",
+        "add": "true",
+        "edit": "false",
+        "list": "false",
+        "search": "false",
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0,
+        "token": "77adf91e-2e29-457b-bfee-b865b81bd6f3"
+      },
+      "salt": {
+        "label": "密码盐",
+        "add": true,
+        "edit": "false",
+        "list": "false",
+        "search": "false",
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "avatar": {
+        "label": "头像",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "true",
+        "query": 0,
+        "display": "imageUpload",
+        "dict": 0
+      },
+      "email": {
+        "label": "电子邮箱",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "mobile": {
+        "label": "手机号码",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "car_no": {
+        "label": "卡号",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "loginfailure": {
+        "label": "失败次数",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "logintime": {
+        "label": "登录时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "loginip": {
+        "label": "登录IP",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "createtime": {
+        "label": "创建时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": "true",
+        "required": false,
+        "query": "BETWEEN",
+        "display": "datetime",
+        "dict": 0
+      },
+      "updatetime": {
+        "label": "更新时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "datetime",
+        "dict": 0
+      },
+      "token": {
+        "label": "Session标识",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "status": {
+        "label": "状态",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "sex": {
+        "label": "性别",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": "true",
+        "required": "true",
+        "query": "EQ",
+        "display": "select",
+        "dict": "sex"
+      },
+      "test": {
+        "label": "动态字典",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": "false",
+        "required": "false",
+        "query": "0",
+        "display": "input",
+        "dict": "0"
+      },
+      "file": {
+        "label": "文件",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "false",
+        "query": 0,
+        "display": "fileUpload",
+        "dict": 0
+      }
+    }
+  },
+  "test": {
+    "sub_table": "sub_test",
+    "sub_table_field": "test_id",
+    "table_field": "id",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "name": {
+        "label": "名称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "status": {
+        "label": "状态",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "memo": {
+        "label": "注释",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "time": {
+        "label": "时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      }
+    }
+  },
+  "user": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "name": {
+        "label": "名称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "true",
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "account": {
+        "label": "账号",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "true",
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "type": {
+        "label": "类型",
+        "add": "false",
+        "edit": "false",
+        "list": "false",
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "password": {
+        "label": "密码",
+        "add": "true",
+        "edit": "false",
+        "list": "false",
+        "search": false,
+        "required": "true",
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "status": {
+        "label": "状态",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "memo": {
+        "label": "备注",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "textarea",
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": "false",
+        "edit": "false",
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "update_time": {
+        "label": "修改时间",
+        "add": "false",
+        "edit": "false",
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      }
+    }
+  },
+  "user_permission": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "user_id": {
+        "label": "用户ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "permission": {
+        "label": "permission",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "status": {
+        "label": "状态",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "memo": {
+        "label": "备注",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "controller": {
+        "label": "controller",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "comment": {
+        "label": "注释",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      }
+    }
+  },
+  "user_token": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "user_id": {
+        "label": "用户ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "token": {
+        "label": "token",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": "true",
+        "edit": "true",
+        "list": "true",
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "expire_time": {
+        "label": "过期时间",
+        "add": "true",
+        "edit": "true",
+        "list": "true",
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "user_agent": {
+        "label": "User-Agent",
+        "add": "true",
+        "edit": "true",
+        "list": "true",
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      }
+    }
+  },
+  "config": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "group": {
+        "label": "分组",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "name": {
+        "label": "名称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "value": {
+        "label": "值",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "extra": {
+        "label": "详情",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "update_time": {
+        "label": "修改时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      }
+    }
+  },
+  "dict": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "name": {
+        "label": "名称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "type": {
+        "label": "类型",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "status": {
+        "label": "状态",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "label": {
+        "label": "标识",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "memo": {
+        "label": "备注",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "update_time": {
+        "label": "修改时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      }
+    }
+  },
+  "dict_detail": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "dict_id": {
+        "label": "字典ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "name": {
+        "label": "名称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "status": {
+        "label": "状态",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "value": {
+        "label": "值",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "memo": {
+        "label": "备注",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "update_time": {
+        "label": "修改时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      }
+    }
+  },
+  "asphalt_base_config": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "name": {
+        "label": "名称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "full_name": {
+        "label": "全称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "status": {
+        "label": "系统状态",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "select",
+        "dict": "sys_status"
+      },
+      "login_background": {
+        "label": "登录背景",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "imageUpload",
+        "dict": 0
+      },
+      "logo": {
+        "label": "logo",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "imageUpload",
+        "dict": 0
+      },
+      "mobile_logo": {
+        "label": "移动端logo",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "imageUpload",
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": "false",
+        "edit": "false",
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "datetime",
+        "dict": 0
+      }
+    }
+  },
+  "asphalt_base_goods": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "name": {
+        "label": "名称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": "true",
+        "required": "true",
+        "query": "LIKE",
+        "display": "input",
+        "dict": 0
+      },
+      "num": {
+        "label": "编号",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "true",
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "asphalt_base_goods_type_id": {
+        "label": "货物类型",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "true",
+        "query": 0,
+        "display": "select",
+        "dict": "asphalt_base_goods_type"
+      },
+      "config": {
+        "label": "配置项",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "false",
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "memo": {
+        "label": "备注",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "textarea",
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": "false",
+        "edit": "false",
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "datetime",
+        "dict": 0
+      }
+    }
+  },
+  "asphalt_base_goods_type": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "name": {
+        "label": "名称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": "true",
+        "required": "true",
+        "query": "LIKE",
+        "display": "input",
+        "dict": 0
+      },
+      "num": {
+        "label": "编号",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "true",
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "memo": {
+        "label": "备注",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "textarea",
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": "false",
+        "edit": "false",
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "datetime",
+        "dict": 0
+      }
+    }
+  },
+  "asphalt_base_tank": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "name": {
+        "label": "名称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": "true",
+        "required": "true",
+        "query": "LIKE",
+        "display": "input",
+        "dict": 0
+      },
+      "asphalt_base_warehouse_id": {
+        "label": "所属库区",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "true",
+        "query": 0,
+        "display": "select",
+        "dict": "asphalt_base_warehouse"
+      },
+      "type": {
+        "label": "类型",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "true",
+        "query": 0,
+        "display": "select",
+        "dict": "tank_type"
+      },
+      "volume": {
+        "label": "容量",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "true",
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "memo": {
+        "label": "备注",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "textarea",
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": "false",
+        "edit": "false",
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "datetime",
+        "dict": 0
+      }
+    }
+  },
+  "asphalt_base_warehouse": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "name": {
+        "label": "名称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": "true",
+        "required": "true",
+        "query": "LIKE",
+        "display": "input",
+        "dict": 0
+      },
+      "type": {
+        "label": "类型",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "true",
+        "query": 0,
+        "display": "select",
+        "dict": "warehouse_type"
+      },
+      "sort": {
+        "label": "排序",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "position": {
+        "label": "位置",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "true",
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "memo": {
+        "label": "备注",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "textarea",
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": "false",
+        "edit": "false",
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "datetime",
+        "dict": 0
+      }
+    }
+  },
+  "sub_test": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "test_id": {
+        "label": "状态",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "name": {
+        "label": "名称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "memo": {
+        "label": "注释",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "time": {
+        "label": "时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      }
+    }
+  },
+  "asphalt_sale_contract": {
+    "sub_table": "asphalt_sale_contract_detail",
+    "sub_table_field": "asphalt_sale_contract_id",
+    "table_field": "id",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "code": {
+        "label": "编号",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": "true",
+        "required": "true",
+        "query": "LIKE",
+        "display": "input",
+        "dict": 0
+      },
+      "need_amount": {
+        "label": "需求量",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "false",
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "sign_amount": {
+        "label": "签收量",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "false",
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "return_amount": {
+        "label": "退货量",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "false",
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "sign_time": {
+        "label": "签约时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "datetime",
+        "dict": 0
+      },
+      "asphalt_sale_customer_id": {
+        "label": "客户",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": "true",
+        "required": "false",
+        "query": "EQ",
+        "display": "select",
+        "dict": "asphalt_sale_customer"
+      },
+      "send_amount": {
+        "label": "发货量",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "false",
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      }
+    }
+  },
+  "asphalt_sale_contract_detail": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "asphalt_base_goods_id": {
+        "label": "货物",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "price": {
+        "label": "单价",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "need_amount": {
+        "label": "需求量",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "sign_amount": {
+        "label": "签收量",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "return_amount": {
+        "label": "退货量",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "memo": {
+        "label": "备注",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "asphalt_sale_contract_id": {
+        "label": "销售合同ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "send_amount": {
+        "label": "发货量",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      }
+    }
+  },
+  "asphalt_sale_customer": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "name": {
+        "label": "名称",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": "true",
+        "required": "true",
+        "query": "LIKE",
+        "display": "input",
+        "dict": 0
+      },
+      "link_man": {
+        "label": "联系人",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "false",
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "phone": {
+        "label": "联系方式",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "false",
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "credit": {
+        "label": "授信额度",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": "false",
+        "query": 0,
+        "display": "input",
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": "false",
+        "edit": "false",
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": "datetime",
+        "dict": 0
+      }
+    }
+  },
+  "asphalt_sale_customer_credit": {
+    "sub_table": "",
+    "sub_table_field": "",
+    "table_field": "",
+    "field": {
+      "id": {
+        "label": "ID",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "name": {
+        "label": "客户",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "operate_man": {
+        "label": "操作人",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "credit": {
+        "label": "授信额度",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      },
+      "create_time": {
+        "label": "创建时间",
+        "add": true,
+        "edit": true,
+        "list": true,
+        "search": false,
+        "required": false,
+        "query": 0,
+        "display": 0,
+        "dict": 0
+      }
+    }
+  }
+}

@@ -4,13 +4,17 @@
 <%@ Import Namespace="System.IO" %>
 <%@ Import Namespace="System.Text" %>
 <%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
+<%@ Import Namespace="CodeSmith.Core.Database" %>
+<%@ Import Namespace="System.Collections.Generic" %>
 
 <script runat="template">
+
 // json 数据格式修改
-public JObject jsonFormat(JToken json, String keyField) {
+public JObject jsonFormat(JToken json, string keyField)
+{
     JObject newJson = new JObject();
     for(int i = 0; i < ((JArray)json).Count; i++){
-        newJson.Add((String)json[i][keyField], json[i]);
+        newJson.Add((string)json[i][keyField], json[i]);
     }
     return newJson;
 }

@@ -12,7 +12,7 @@
 // 表字段额外数据
 JToken ExtInfo = ExtJson["field"];
 // 子表名称
-String subTableName = (String)ExtJson["sub_table"];
+string subTableName = (string)ExtJson["sub_table"];
 // 子表字段额外数据
 JToken ExtSubTableInfo = null;
 if(subTableName != "") {
@@ -114,13 +114,15 @@ export function del<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
 
 /**
  * <%= SourceTable.Description %> 子表
+ * @param {Number} id
  * @returns {Promise<ActionResult<Array | null>>}
  */
-export function subDetail<%= SnakeFormatHump(SourceTable.Name, true) %>() {
+export function subDetail<%= SnakeFormatHump(SourceTable.Name, true) %>(id) {
     /**@type {import('axios').AxiosRequestConfig} */
     const sendObj = {
         url: '/api/<%= SnakeFormatHump(SourceTable.Name, true) %>/subDetail',
         method: 'GET',
+        params: { id },
     }
     return request(sendObj)
 }

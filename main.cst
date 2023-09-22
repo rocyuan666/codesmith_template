@@ -57,7 +57,7 @@ for(int i = 0; i < Tables.Count; i++)
     }
     
     // 子表名
-    String subTable = (String)extTableJson["sub_table"];
+    string subTable = (string)extTableJson["sub_table"];
     // 子表数据填充
     extTableJson["subTableJson"] = json[subTable];
     
@@ -88,7 +88,7 @@ for(int i = 0; i < Tables.Count; i++)
 	
     #region Output 文件输出
 
-    private string _outputDirectory = String.Empty;
+    private string _outputDirectory = string.Empty;
 	
     [Editor(typeof(System.Windows.Forms.Design.FolderNameEditor), typeof(System.Drawing.Design.UITypeEditor))] 
 	[OptionalAttribute]

@@ -8,64 +8,20 @@
 <!-- #include file="..\\common\\mapTypeTransform.cst" -->
 export const genRouters = [
     {
-        path: '/test',
-        name: 'Test',
-        redirect: 'noRedirect',
-        hidden: false,
-        component: () => import('@/layout'),
-        alwaysShow: true,
-        meta: {
-            icon: 'Grid',
-            link: null,
-            noCache: false,
-            title: '测试静态页',
-        },
-        children: [
-            {
-                path: 'faAdmin',
-                name: 'FaAdmin',
-                hidden: false,
-                component: () => import('@/views/faAdmin'),
-                meta: {
-                    icon: 'Menu',
-                    link: null,
-                    noCache: false,
-                    title: '管理员测试表',
-                },
-            },
-            {
-                path: 'testSubTable',
-                name: 'TestSubTable',
-                hidden: false,
-                component: () => import('@/views/testSubTable'),
-                meta: {
-                    icon: 'Menu',
-                    link: null,
-                    noCache: false,
-                    title: '测试子表',
-                },
-            },
-            {
-                path: 'testTree',
-                name: 'TestTree',
-                hidden: false,
-                component: () => import('@/views/testTree'),
-                meta: {
-                    icon: 'Menu',
-                    link: null,
-                    noCache: false,
-                    title: '测试树表',
-                },
-            },
-        ],
-    },
-    {
         path: '/cic',
         name: 'Cic',
         redirect: 'noRedirect',
         hidden: false,
         component: () => import('@/layout'),
         alwaysShow: true,
+        permissions: [
+            'User.list',
+            'UserPermission.list',
+            <% for(int i = 0; i < Tables.Count; i++) { %>
+            <% if(Tables[i].Name == "user") continue; %>
+            '<%= SnakeFormatHump(Tables[i].Name, true) %>.list',
+            <% } %>
+        ],
         meta: {
             icon: 'Grid',
             link: null,
@@ -78,6 +34,7 @@ export const genRouters = [
                 name: 'User',
                 hidden: false,
                 component: () => import('@/views/user'),
+                permissions: ['User.list'],
                 meta: {
                     icon: 'Menu',
                     link: null,
@@ -86,10 +43,11 @@ export const genRouters = [
                 },
             },
             {
-                path: 'permission',
-                name: 'Permission',
+                path: 'userPermission',
+                name: 'UserPermission',
                 hidden: false,
                 component: () => import('@/views/permission'),
+                permissions: ['UserPermission.list'],
                 meta: {
                     icon: 'Menu',
                     link: null,
@@ -97,25 +55,14 @@ export const genRouters = [
                     title: '用户权限',
                 },
             },
-            /*{
-                path: 'organize',
-                name: 'Organize',
-                hidden: false,
-                component: () => import('@/views/organize'),
-                meta: {
-                    icon: 'Menu',
-                    link: null,
-                    noCache: false,
-                    title: '组织结构',
-                },
-            },*/
-        <% for(int i = 0; i < Tables.Count; i++) { %>
-            <% if(Tables[i].Name == "user" || Tables[i].Name == "fa_admin") continue; %>
+            <% for(int i = 0; i < Tables.Count; i++) { %>
+            <% if(Tables[i].Name == "user") continue; %>
             {
                 path: '<%= SnakeFormatHump(Tables[i].Name) %>',
                 name: '<%= SnakeFormatHump(Tables[i].Name, true) %>',
                 hidden: false,
                 component: () => import('@/views/<%= SnakeFormatHump(Tables[i].Name) %>'),
+                permissions: ['<%= SnakeFormatHump(Tables[i].Name, true) %>.list'],
                 meta: {
                     icon: 'Menu',
                     link: null,
@@ -123,7 +70,7 @@ export const genRouters = [
                     title: '<%= Tables[i].Description == "" ? SnakeFormatHump(Tables[i].Name) : Tables[i].Description %>',
                 },
             },
-        <% } %>
+            <% } %>
         ],
     },
 ]

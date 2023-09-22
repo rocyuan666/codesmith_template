@@ -10,7 +10,7 @@ public string DbTypeToJsType(DbType type)
 }
 
 // mysql类型 转换 js类型
-public string MysqlTypeToJsType(String type)
+public string MysqlTypeToJsType(string type)
 {
     return MysqlTypeToJavascript[type];
 }

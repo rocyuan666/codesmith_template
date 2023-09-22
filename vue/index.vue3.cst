@@ -9,16 +9,26 @@
 <!-- #include file="..\\common\\utils.cst" -->
 <!-- #include file="..\\common\\mapTypeTransform.cst" -->
 <%
+#region 准备子表数据
 
 // 表字段额外数据
 JToken ExtInfo = ExtJson["field"];
 // 子表名称
-String subTableName = (String)ExtJson["sub_table"];
+string subTableName = (string)ExtJson["sub_table"];
+
 // 子表字段额外数据
 JToken ExtSubTableInfo = null;
+// 子表字段名集合
+List<string> subFieldNames = new List<string>();
 if(subTableName != "") {
     ExtSubTableInfo = ExtJson["subTableJson"]["field"];
+    foreach(JToken x in ExtSubTableInfo) {
+        string fieldNameSub = x.Path.Split('.')[x.Path.Split('.').Length-1];
+        subFieldNames.Add(fieldNameSub);
+    }
 }
+
+#endregion
 
 #region 是否有配置搜索
 
@@ -36,19 +46,37 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
 
 #region 字典标识收集 去除重复字典标识用作js变量
 
-List<String> dicts = new List<String>();
+List<string> dicts = new List<string>();
 
+// 主表字典处理
 for(int i = 0; i < SourceTable.Columns.Count; i++)
 {
-    String tableName = SourceTable.Columns[i].Name;
-    if((String)ExtInfo[tableName]["dict"] != "" && (String)ExtInfo[tableName]["dict"] != "0")
+    string fieldName = SourceTable.Columns[i].Name;
+    if((string)ExtInfo[fieldName]["dict"] != "" && (string)ExtInfo[fieldName]["dict"] != "0")
     {
-        if((String)ExtInfo[tableName]["display"] == "select" || (String)ExtInfo[tableName]["display"] == "radio" || (String)ExtInfo[tableName]["display"] == "checkbox")
+        if((string)ExtInfo[fieldName]["display"] == "select" || (string)ExtInfo[fieldName]["display"] == "radio" || (string)ExtInfo[fieldName]["display"] == "checkbox")
         {
-            if(!dicts.Contains((String)ExtInfo[tableName]["dict"]))
+            if(!dicts.Contains((string)ExtInfo[fieldName]["dict"]))
             {
-                dicts.Add((String)ExtInfo[tableName]["dict"]);
+                dicts.Add((string)ExtInfo[fieldName]["dict"]);
             }
+        }
+    }
+}
+// 子表字典处理
+if(subTableName != "")
+{
+    foreach(string fieldName in subFieldNames)
+    {
+        if((string)ExtSubTableInfo[fieldName]["dict"] != "" && (string)ExtSubTableInfo[fieldName]["dict"] != "0")
+        {
+            if((string)ExtSubTableInfo[fieldName]["display"] == "select" || (string)ExtSubTableInfo[fieldName]["display"] == "radio" || (string)ExtSubTableInfo[fieldName]["display"] == "checkbox")
+        {
+            if(!dicts.Contains((string)ExtSubTableInfo[fieldName]["dict"]))
+            {
+                dicts.Add((string)ExtSubTableInfo[fieldName]["dict"]);
+            }
+        }
         }
     }
 }
@@ -62,62 +90,72 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
         <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px" @submit.prevent>
         <%-- 循环字段 --%>
         <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
-            <% String fieldName = SourceTable.Columns[i].Name; %>
+            <% string fieldName = SourceTable.Columns[i].Name; %>
             <%-- 判断字段是否设置搜索查询 --%>
             <% if((Boolean)ExtInfo[fieldName]["search"] == true) { %>
             <%-- 判断字段对应的表单类型 --%>
-            <% if((String)ExtInfo[fieldName]["display"] == "input") { %>
+            <% if((string)ExtInfo[fieldName]["display"] == "input") { %>
             <%-- 文本框 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
                 <el-input v-model="queryParams.query.<%= fieldName %>.value" placeholder="<%= ExtInfo[fieldName]["label"] %>" clearable @keyup.enter="handleQuery" style="width: 214px" />
             </el-form-item>
-            <% } else if((String)ExtInfo[fieldName]["display"] == "textarea") { %>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "textarea") { %>
             <%-- 文本域 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
                 <el-input v-model="queryParams.query.<%= fieldName %>.value" placeholder="<%= ExtInfo[fieldName]["label"] %>" type="textarea" @keyup.enter="handleQuery" />
             </el-form-item>
-            <% } else if((String)ExtInfo[fieldName]["display"] == "select") { %>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "select") { %>
             <%-- 下拉框 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
                 <el-select v-model="queryParams.query.<%= fieldName %>.value" placeholder="<%= ExtInfo[fieldName]["label"] %>" clearable>
-                    <% if((String)ExtInfo[fieldName]["dict"] == "" || (String)ExtInfo[fieldName]["dict"] == "0") { %>
+                    <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
                     <el-option label="请手动写入选项 或者 选择字典生成" value="" />
                     <% } else { %>
                     <el-option v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :value="dict.value" />
                     <% } %>
                 </el-select>
             </el-form-item>
-            <% } else if((String)ExtInfo[fieldName]["display"] == "radio") { %>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "radio") { %>
             <%-- 单选框 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
                 <el-radio-group v-model="queryParams.query.<%= fieldName %>.value">
-                    <% if((String)ExtInfo[fieldName]["dict"] == "" || (String)ExtInfo[fieldName]["dict"] == "0") { %>
+                    <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
                     <el-radio label="1">请手动写入选项 或者 选择字典生成</el-radio>
                     <% } else { %>
                     <el-radio v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.value">{{dict.label}}</el-radio>
                     <% } %>
                 </el-radio-group>
             </el-form-item>
-            <% } else if((String)ExtInfo[fieldName]["display"] == "checkbox") { %>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "checkbox") { %>
             <%-- 多选框 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
                 <el-checkbox-group v-model="queryParams.query.<%= fieldName %>.value">
-                    <% if((String)ExtInfo[fieldName]["dict"] == "" || (String)ExtInfo[fieldName]["dict"] == "0") { %>
+                    <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
                     <el-checkbox label="1">请手动写入选项 或者 选择字典生成</el-checkbox>
                     <% } else { %>
                     <el-checkbox v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.value">{{dict.label}}</el-checkbox>
                     <% } %>
                 </el-checkbox-group>
             </el-form-item>
-            <% } else if((String)ExtInfo[fieldName]["display"] == "datetime" && (String)ExtInfo[fieldName]["query"] != "BETWEEN") { %>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "datetime" && (string)ExtInfo[fieldName]["query"] != "BETWEEN") { %>
             <%-- 日期时间 非范围 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
                 <el-date-picker clearable v-model="queryParams.query.<%= fieldName %>.value" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>"></el-date-picker>
             </el-form-item>
-            <% } else if((String)ExtInfo[fieldName]["display"] == "datetime" && (String)ExtInfo[fieldName]["query"] == "BETWEEN") { %>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "datetime" && (string)ExtInfo[fieldName]["query"] == "BETWEEN") { %>
             <%-- 日期时间 范围 --%>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
                 <el-date-picker v-model="queryParams.query.<%= fieldName %>.value" type="datetimerange" value-format="YYYY-MM-DD HH:mm:ss" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
+            </el-form-item>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "date" && (string)ExtInfo[fieldName]["query"] != "BETWEEN") { %>
+            <%-- 日期 非范围 --%>
+            <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+                <el-date-picker clearable v-model="queryParams.query.<%= fieldName %>.value" type="date" value-format="YYYY-MM-DD" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>"></el-date-picker>
+            </el-form-item>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "date" && (string)ExtInfo[fieldName]["query"] == "BETWEEN") { %>
+            <%-- 日期 范围 --%>
+            <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+                <el-date-picker v-model="queryParams.query.<%= fieldName %>.value" type="daterange" value-format="YYYY-MM-DD" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
             </el-form-item>
             <% } %>
             <% } %>
@@ -139,23 +177,93 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
             <right-toolbar :search="<%= isSearch.ToString().ToLower() %>" v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
         </el-row>
         <!-- 表格 -->
-        <el-table v-loading="loading" :data="<%= SnakeFormatHump(SourceTable.Name) %>List" empty-text="暂无数据~" @selection-change="handleSelectionChange">
+        <el-table v-loading="loading" :data="<%= SnakeFormatHump(SourceTable.Name) %>List" empty-text="暂无数据~" @selection-change="handleSelectionChange"<% if(subTableName != ""){ %> @expand-change="handleExpandChange"<% } %>>
             <el-table-column type="selection" width="55" align="center" />
+            <%-- 子表展示 --%>
+            <% if(subTableName != "") { %>
+            <!-- 子表数据展示 -->
+            <el-table-column type="expand">
+                <template #default="{ row }">
+                    <el-table :data="subTableData[`subTableList${row.id}`]" empty-text="暂无数据~" style="width: 90%; margin: 0 auto">
+                        <%-- 循环字段 --%>
+                        <% foreach(string fieldName in subFieldNames) { %>
+                        <%-- 判断字段是否设置列表显示 --%>
+                        <% if((Boolean)ExtSubTableInfo[fieldName]["list"] == true) { %>
+                        <%-- 判断字段对应的表单类型 --%>
+                        <% if((string)ExtSubTableInfo[fieldName]["display"] == "input") { %>
+                        <%-- 文本框 --%>
+                        <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
+                        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "textarea") { %>
+                        <%-- 文本域 --%>
+                        <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
+                        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "select") { %>
+                        <%-- 下拉框 --%>
+                        <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+                        <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
+                        <% } else { %>
+                        <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>">
+                            <template #default="{ row }">
+                                <dict-tag :options="<%= ExtSubTableInfo[fieldName]["dict"] %>" :value="row.<%= fieldName %>" />
+                            </template>
+                        </el-table-column>
+                        <% } %>
+                        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "radio") { %>
+                        <%-- 单选框 --%>
+                        <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+                        <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
+                        <% } else { %>
+                        <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>">
+                            <template #default="{ row }">
+                                <dict-tag :options="<%= ExtSubTableInfo[fieldName]["dict"] %>" :value="row.<%= fieldName %>" />
+                            </template>
+                        </el-table-column>
+                        <% } %>
+                        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox") { %>
+                        <%-- 复选框 --%>
+                        <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+                        <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
+                        <% } else { %>
+                        <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>">
+                            <template #default="{ row }">
+                                <dict-tag :options="<%= ExtSubTableInfo[fieldName]["dict"] %>" :value="row.<%= fieldName %> ? row.<%= fieldName %>.split(',') : []" />
+                            </template>
+                        </el-table-column>
+                        <% } %>
+                        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "datetime") { %>
+                        <%-- 日期时间 --%>
+                        <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" width="180" />
+                        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "date") { %>
+                        <%-- 日期 --%>
+                        <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" width="180" />
+                        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "imageUpload") { %>
+                        <%-- 图片上传 --%>
+                        <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" width="100">
+                            <template #default="{ row }">
+                                <image-preview :src="row.<%= fieldName %>" :width="50" :height="50" />
+                            </template>
+                        </el-table-column>
+                        <% } %>
+                        <% } %>
+                        <% } %>
+                    </el-table>
+                </template>
+            </el-table-column>
+            <% } %>
             <%-- 循环字段 --%>
             <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
-            <% String fieldName = SourceTable.Columns[i].Name; %>
+            <% string fieldName = SourceTable.Columns[i].Name; %>
             <%-- 判断字段是否设置列表显示 --%>
             <% if((Boolean)ExtInfo[fieldName]["list"] == true) { %>
             <%-- 判断字段对应的表单类型 --%>
-            <% if((String)ExtInfo[fieldName]["display"] == "input") { %>
+            <% if((string)ExtInfo[fieldName]["display"] == "input") { %>
             <%-- 文本框 --%>
             <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
-            <% } else if((String)ExtInfo[fieldName]["display"] == "textarea") { %>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "textarea") { %>
             <%-- 文本域 --%>
             <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
-            <% } else if((String)ExtInfo[fieldName]["display"] == "select") { %>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "select") { %>
             <%-- 下拉框 --%>
-            <% if((String)ExtInfo[fieldName]["dict"] == "" || (String)ExtInfo[fieldName]["dict"] == "0") { %>
+            <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
             <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
             <% } else { %>
             <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>">
@@ -164,9 +272,9 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
                 </template>
             </el-table-column>
             <% } %>
-            <% } else if((String)ExtInfo[fieldName]["display"] == "radio") { %>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "radio") { %>
             <%-- 单选框 --%>
-            <% if((String)ExtInfo[fieldName]["dict"] == "" || (String)ExtInfo[fieldName]["dict"] == "0") { %>
+            <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
             <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
             <% } else { %>
             <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>">
@@ -175,9 +283,9 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
                 </template>
             </el-table-column>
             <% } %>
-            <% } else if((String)ExtInfo[fieldName]["display"] == "checkbox") { %>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "checkbox") { %>
             <%-- 复选框 --%>
-            <% if((String)ExtInfo[fieldName]["dict"] == "" || (String)ExtInfo[fieldName]["dict"] == "0") { %>
+            <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
             <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
             <% } else { %>
             <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>">
@@ -186,10 +294,13 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
                 </template>
             </el-table-column>
             <% } %>
-            <% } else if((String)ExtInfo[fieldName]["display"] == "datetime") { %>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "datetime") { %>
             <%-- 日期时间 --%>
             <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" width="180" />
-            <% } else if((String)ExtInfo[fieldName]["display"] == "imageUpload") { %>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "date") { %>
+            <%-- 日期 --%>
+            <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" width="180" />
+            <% } else if((string)ExtInfo[fieldName]["display"] == "imageUpload") { %>
             <%-- 图片上传 --%>
             <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" width="100">
                 <template #default="{ row }">
@@ -199,7 +310,7 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
             <% } %>
             <% } %>
             <% } %>
-            <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="236" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit', '<%= SnakeFormatHump(SourceTable.Name, true) %>.del']">
+            <el-table-column label="操作" align="center" fixed="right" class-name="small-padding fixed-width" width="236" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit', '<%= SnakeFormatHump(SourceTable.Name, true) %>.del']">
                 <template #default="{ row }">
                     <el-button link type="primary" icon="Edit" @click="handleEdit(row)" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit']" v-autoBlur>修改</el-button>
                     <el-button link type="primary" icon="Delete" @click="handleDelete(row)" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.del']" v-autoBlur>删除</el-button>
@@ -217,15 +328,15 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
 
 <script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>">
 import { ref, getCurrentInstance, reactive, toRefs, provide } from 'vue'
-import { list<%= SnakeFormatHump(SourceTable.Name, true) %>, del<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
+import { list<%= SnakeFormatHump(SourceTable.Name, true) %>, del<%= SnakeFormatHump(SourceTable.Name, true) %><% if(subTableName != "") { %>, subDetail<%= SnakeFormatHump(SourceTable.Name, true) %><% } %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
 import Add from './add.vue'
 import Edit from './edit.vue'
 
 const { proxy } = getCurrentInstance()
 <%
 // 字典 js变量 js方法参数 处理
-String dictsDot = "";
-String dictsArgs = "";
+string dictsDot = "";
+string dictsArgs = "";
 for(int i = 0; i < dicts.Count; i++)
 {
     if(i != dicts.Count - 1){
@@ -256,7 +367,7 @@ provide('<%= dicts[i] %>', <%= dicts[i] %>)
  * @property {Number} queryParams.limit
  * @property {Object} queryParams.query
 <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
-<% String fieldName = SourceTable.Columns[i].Name; %>
+<% string fieldName = SourceTable.Columns[i].Name; %>
 <% if((Boolean)ExtInfo[fieldName]["search"] == true) { %>
  * @property {import('@/types').QueryFieldItem<<%= MysqlTypeToJsType(SourceTable.Columns[i].NativeType) %>>} queryParams.query.<%= fieldName %>
 <% } %>
@@ -271,7 +382,7 @@ const data = reactive({
 <% if(isSearch) { %>
         query: {
 <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
-<% String fieldName = SourceTable.Columns[i].Name; %>
+<% string fieldName = SourceTable.Columns[i].Name; %>
 <% if((Boolean)ExtInfo[fieldName]["search"] == true) { %>
             <%= fieldName %>: {
                 type: '<%= ExtInfo[fieldName]["query"] %>',
@@ -369,6 +480,26 @@ function handleSelectionChange(selection) {
     ids.value = selection.map((item) => item.id)
     multiple.value = !selection.length
 }
+<% if(subTableName != "") { %>
+
+/**@type {import('vue').Ref<Object[]>} */
+const subTableData = ref({})
+
+/**
+ * 展开行请求子表数据
+ * @param row
+ */
+function handleExpandChange(row, expandedRows) {
+    let isExpand = false
+    if (expandedRows.length) {
+        isExpand = expandedRows.some((item) => item.id === row.id)
+    }
+    if (!isExpand) return
+    subDetail<%= SnakeFormatHump(SourceTable.Name, true) %>(row.id).then((res) => {
+        subTableData.value[`subTableList${row.id}`] = res.data
+    })
+}
+<% } %>
 
 getList()
 </script>

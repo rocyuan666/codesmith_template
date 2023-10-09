@@ -35,7 +35,7 @@ if(subTableName != "") {
 Boolean isSearch = false;
 for(int i = 0; i < SourceTable.Columns.Count; i++)
 {
-    if((Boolean)ExtInfo[SourceTable.Columns[i].Name]["search"] == true)
+    if((bool)ExtInfo[SourceTable.Columns[i].Name]["search"])
     {
         isSearch = true;
         break;
@@ -92,7 +92,7 @@ if(subTableName != "")
         <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
             <% string fieldName = SourceTable.Columns[i].Name; %>
             <%-- 判断字段是否设置搜索查询 --%>
-            <% if((Boolean)ExtInfo[fieldName]["search"] == true) { %>
+            <% if((bool)ExtInfo[fieldName]["search"]) { %>
             <%-- 判断字段对应的表单类型 --%>
             <% if((string)ExtInfo[fieldName]["display"] == "input") { %>
             <%-- 文本框 --%>
@@ -166,16 +166,28 @@ if(subTableName != "")
             </el-form-item>
         </el-form>
         <% } %>
+        <%-- 是否有 添加 删除 导出 功能 --%>
+        <% if((bool)ExtJson["btn_add"] || (bool)ExtJson["btn_del"] || (bool)ExtJson["btn_export"]) { %>
         <!-- 操作按钮 -->
-        <el-row :gutter="10" class="mb8" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.add', '<%= SnakeFormatHump(SourceTable.Name, true) %>.del']">
+        <el-row :gutter="10" class="mb8">
+            <% if((bool)ExtJson["btn_add"]) { %>
             <el-col :span="1.5" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.add']">
                 <el-button type="primary" plain icon="Plus" @click="handleAdd" v-autoBlur>新增</el-button>
             </el-col>
+            <% } %>
+            <% if((bool)ExtJson["btn_del"]) { %>
             <el-col :span="1.5" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.del']">
                 <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-autoBlur>删除</el-button>
             </el-col>
+            <% } %>
+            <% if((bool)ExtJson["btn_export"]) { %>
+            <el-col :span="1.5" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.export']">
+                <el-button type="success" plain icon="Download" @click="handleExport" :loading="btnExportLoading" v-autoBlur>导出</el-button>
+            </el-col>
+            <% } %>
             <right-toolbar :search="<%= isSearch.ToString().ToLower() %>" v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
         </el-row>
+        <% } %>
         <!-- 表格 -->
         <el-table v-loading="loading" :data="<%= SnakeFormatHump(SourceTable.Name) %>List" empty-text="暂无数据~" @selection-change="handleSelectionChange"<% if(subTableName != ""){ %> @expand-change="handleExpandChange"<% } %>>
             <el-table-column type="selection" width="55" align="center" />
@@ -188,7 +200,7 @@ if(subTableName != "")
                         <%-- 循环字段 --%>
                         <% foreach(string fieldName in subFieldNames) { %>
                         <%-- 判断字段是否设置列表显示 --%>
-                        <% if((Boolean)ExtSubTableInfo[fieldName]["list"] == true) { %>
+                        <% if((bool)ExtSubTableInfo[fieldName]["list"]) { %>
                         <%-- 判断字段对应的表单类型 --%>
                         <% if((string)ExtSubTableInfo[fieldName]["display"] == "input") { %>
                         <%-- 文本框 --%>
@@ -253,7 +265,7 @@ if(subTableName != "")
             <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
             <% string fieldName = SourceTable.Columns[i].Name; %>
             <%-- 判断字段是否设置列表显示 --%>
-            <% if((Boolean)ExtInfo[fieldName]["list"] == true) { %>
+            <% if((bool)ExtInfo[fieldName]["list"]) { %>
             <%-- 判断字段对应的表单类型 --%>
             <% if((string)ExtInfo[fieldName]["display"] == "input") { %>
             <%-- 文本框 --%>
@@ -310,12 +322,19 @@ if(subTableName != "")
             <% } %>
             <% } %>
             <% } %>
+            <%-- 是否有 编辑 删除 功能 --%>
+            <% if((bool)ExtJson["btn_edit"] || (bool)ExtJson["btn_del"]) { %>
             <el-table-column label="操作" align="center" fixed="right" class-name="small-padding fixed-width" width="236" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit', '<%= SnakeFormatHump(SourceTable.Name, true) %>.del']">
                 <template #default="{ row }">
+                    <% if((bool)ExtJson["btn_edit"]) { %>
                     <el-button link type="primary" icon="Edit" @click="handleEdit(row)" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit']" v-autoBlur>修改</el-button>
+                    <% } %>
+                    <% if((bool)ExtJson["btn_del"]) { %>
                     <el-button link type="primary" icon="Delete" @click="handleDelete(row)" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.del']" v-autoBlur>删除</el-button>
+                    <% } %>
                 </template>
             </el-table-column>
+            <% } %>
         </el-table>
         <!-- 分页 -->
         <pagination v-show="total > 0" :total="total" v-model:page="queryParams.page" v-model:limit="queryParams.limit" @pagination="getList" />
@@ -327,8 +346,12 @@ if(subTableName != "")
 </template>
 
 <script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>">
-import { ref, getCurrentInstance, reactive, toRefs, provide } from 'vue'
-import { list<%= SnakeFormatHump(SourceTable.Name, true) %>, del<%= SnakeFormatHump(SourceTable.Name, true) %><% if(subTableName != "") { %>, subDetail<%= SnakeFormatHump(SourceTable.Name, true) %><% } %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
+import { ref, getCurrentInstance, reactive, toRefs, provide, watch } from 'vue'
+import { list<%= SnakeFormatHump(SourceTable.Name, true) %>, del<%= SnakeFormatHump(SourceTable.Name, true) %><% if((bool)ExtJson["btn_export"]) { %>, export<%= SnakeFormatHump(SourceTable.Name, true) %><% } %><% if(subTableName != "") { %>, subDetail<%= SnakeFormatHump(SourceTable.Name, true) %><% } %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
+<% if((bool)ExtJson["btn_export"]) { %>
+import { exportJsonToExcel } from '@/utils/excel'
+import { labelValueToKeyValue, exportFormatJson } from '@/utils/roc'
+<% } %>
 import Add from './add.vue'
 import Edit from './edit.vue'
 
@@ -368,7 +391,7 @@ provide('<%= dicts[i] %>', <%= dicts[i] %>)
  * @property {Object} queryParams.query
 <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
 <% string fieldName = SourceTable.Columns[i].Name; %>
-<% if((Boolean)ExtInfo[fieldName]["search"] == true) { %>
+<% if((bool)ExtInfo[fieldName]["search"]) { %>
  * @property {import('@/types').QueryFieldItem<<%= MysqlTypeToJsType(SourceTable.Columns[i].NativeType) %>>} queryParams.query.<%= fieldName %>
 <% } %>
 <% } %>
@@ -383,7 +406,7 @@ const data = reactive({
         query: {
 <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
 <% string fieldName = SourceTable.Columns[i].Name; %>
-<% if((Boolean)ExtInfo[fieldName]["search"] == true) { %>
+<% if((bool)ExtInfo[fieldName]["search"]) { %>
             <%= fieldName %>: {
                 type: '<%= ExtInfo[fieldName]["query"] %>',
                 value: null,
@@ -471,15 +494,103 @@ function resetQuery() {
     proxy.resetForm('queryRef')
     handleQuery()
 }
+<% if((bool)ExtJson["btn_export"]) { %>
+
+/**
+ * 选中的数据
+ * @type {Ref<UnwrapRef<*[]>>}
+ */
+const selectData = ref([])
+<% } %>
 
 /**
  * 表格前多选框选中数据
  * @param {import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %>[]} selection
  */
 function handleSelectionChange(selection) {
+    <% if((bool)ExtJson["btn_export"]) { %>
+    selectData.value = selection
+    <% } %>
     ids.value = selection.map((item) => item.id)
     multiple.value = !selection.length
 }
+<% if((bool)ExtJson["btn_export"]) { %>
+
+const btnExportLoading = ref(false)
+
+<% if(dicts.Count != 0) { %>
+// 导出功能 字典数据整理
+const dictKeyValue = {}
+watch([<%= dictsDot %>], ([<%= dictsDot %>]) => {
+    <%-- 循环字段 --%>
+    <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+    <% string fieldName = SourceTable.Columns[i].Name; %>
+    <%-- 判断字段是否设置列表显示 --%>
+    <% if((bool)ExtInfo[fieldName]["list"]) { %>
+    <% if((string)ExtInfo[fieldName]["dict"] != "" && (string)ExtInfo[fieldName]["dict"] != "0") { %>
+    dictKeyValue['<%= fieldName %>'] = labelValueToKeyValue(<%= ExtInfo[fieldName]["dict"] %>)
+    <% } %>
+    <% } %>
+    <% } %>
+})
+
+<% } %>
+/** 导出按钮操作 */
+function handleExport() {
+    btnExportLoading.value = true
+    const filename = '<%= SourceTable.Description %>'
+    <%
+        // 导出 表头&数据 处理
+        string headerText = "";
+        string fieldText = "";
+        for(int i = 0; i < SourceTable.Columns.Count; i++) {
+            string fieldName = SourceTable.Columns[i].Name;
+            if((bool)ExtInfo[fieldName]["list"]) {
+                if(i != SourceTable.Columns.Count - 1){
+                    headerText += "'" + ExtInfo[fieldName]["label"] + "', ";
+                    fieldText += "'" + fieldName + "', ";
+                }else {
+                    headerText += "'" + ExtInfo[fieldName]["label"] + "'";
+                    fieldText += "'" + fieldName + "'";
+                }
+            }
+        }
+    %>
+    const header = [<%= headerText %>]
+    const filterVal = [<%= fieldText %>]
+    if (selectData.value.length) {
+        proxy.$modal
+            .confirm('是否导出选中数据')
+            .then(function () {
+                const data = exportFormatJson(filterVal, selectData.value<% if(dicts.Count != 0) { %>, dictKeyValue<% } %>)
+                exportJsonToExcel({ header, data, filename })
+                proxy.$modal.msgSuccess('导出成功')
+                btnExportLoading.value = false
+            })
+            .catch(() => {
+                btnExportLoading.value = false
+            })
+    } else {
+        proxy.$modal
+            .confirm('是否导出全部数据')
+            .then(function () {
+                export<%= SnakeFormatHump(SourceTable.Name, true) %>({ query: queryParams.value.query })
+                    .then((res) => {
+                        const data = exportFormatJson(filterVal, res.data.rows<% if(dicts.Count != 0) { %>, dictKeyValue<% } %>)
+                        exportJsonToExcel({ header, data, filename })
+                        proxy.$modal.msgSuccess('导出成功')
+                        btnExportLoading.value = false
+                    })
+                    .catch(() => {
+                        btnExportLoading.value = false
+                    })
+            })
+            .catch(() => {
+                btnExportLoading.value = false
+            })
+    }
+}
+<% } %>
 <% if(subTableName != "") { %>
 
 /**@type {import('vue').Ref<Object[]>} */

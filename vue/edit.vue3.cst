@@ -38,7 +38,7 @@ Boolean isEditCheck = false;
 for(int i = 0; i < SourceTable.Columns.Count; i++)
 {
     string fieldName = SourceTable.Columns[i].Name;
-    if((Boolean)ExtInfo[fieldName]["edit"] == true && (Boolean)ExtInfo[fieldName]["required"] == true)
+    if((bool)ExtInfo[fieldName]["edit"] == true && (bool)ExtInfo[fieldName]["required"] == true)
     {
         isEditCheck = true;
         break;
@@ -48,7 +48,7 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
 // 子表是否有配置校验
 Boolean isSubTableEditCheck = false;
 foreach(string fieldName in subFieldNames) {
-    if((Boolean)ExtSubTableInfo[fieldName]["edit"] == true && (Boolean)ExtSubTableInfo[fieldName]["required"] == true)
+    if((bool)ExtSubTableInfo[fieldName]["edit"] == true && (bool)ExtSubTableInfo[fieldName]["required"] == true)
     {
         isSubTableEditCheck = true;
         break;
@@ -113,18 +113,18 @@ if(subTableName != "")
                 }
             %>
             <%-- 判断字段是否设置编辑 --%>
-            <% if((Boolean)ExtInfo[fieldName]["edit"] == true) { %>
+            <% if((bool)ExtInfo[fieldName]["edit"] == true) { %>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="<%= fieldName %>">
                 <%-- 判断字段对应的表单类型 --%>
                 <% if((string)ExtInfo[fieldName]["display"] == "input") { %>
                 <%-- 文本框 --%>
-                <el-input v-model="form.row.<%= fieldName %>" placeholder="请输入<%= ExtInfo[fieldName]["label"] %>" />
+                <el-input v-model="form.row.<%= fieldName %>" placeholder="请输入<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["edit_disable"].ToString().ToLower() %>" />
                 <% } else if((string)ExtInfo[fieldName]["display"] == "textarea") { %>
                 <%-- 文本域 --%>
-                <el-input v-model="form.row.<%= fieldName %>" type="textarea" placeholder="请输入<%= ExtInfo[fieldName]["label"] %>" />
+                <el-input v-model="form.row.<%= fieldName %>" type="textarea" placeholder="请输入<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["edit_disable"].ToString().ToLower() %>" />
                 <% } else if((string)ExtInfo[fieldName]["display"] == "select") { %>
                 <%-- 下拉框 --%>
-                <el-select v-model="form.row.<%= fieldName %>" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>" clearable>
+                <el-select v-model="form.row.<%= fieldName %>" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>" clearable :disabled="<%= ExtInfo[fieldName]["edit_disable"].ToString().ToLower() %>">
                     <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
                     <el-option label="请手动写入选项 或者 选择字典生成" value="" />
                     <% } else { %>
@@ -133,7 +133,7 @@ if(subTableName != "")
                 </el-select>
                 <% } else if((string)ExtInfo[fieldName]["display"] == "radio") { %>
                 <%-- 单选框 --%>
-                <el-radio-group v-model="form.row.<%= fieldName %>">
+                <el-radio-group v-model="form.row.<%= fieldName %>" :disabled="<%= ExtInfo[fieldName]["edit_disable"].ToString().ToLower() %>">
                     <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
                     <el-radio label="1">请手动写入选项 或者 选择字典生成</el-radio>
                     <% } else { %>
@@ -142,7 +142,7 @@ if(subTableName != "")
                 </el-radio-group>
                 <% } else if((string)ExtInfo[fieldName]["display"] == "checkbox") { %>
                 <%-- 复选框 --%>
-                <el-checkbox-group v-model="form.row.<%= fieldName %>">
+                <el-checkbox-group v-model="form.row.<%= fieldName %>" :disabled="<%= ExtInfo[fieldName]["edit_disable"].ToString().ToLower() %>">
                     <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
                     <el-checkbox label="1">请手动写入选项 或者 选择字典生成</el-checkbox>
                     <% } else { %>
@@ -151,19 +151,19 @@ if(subTableName != "")
                 </el-checkbox-group>
                 <% } else if((string)ExtInfo[fieldName]["display"] == "datetime") { %>
                 <%-- 日期时间 --%>
-                <el-date-picker clearable v-model="form.row.<%= fieldName %>" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>"></el-date-picker>
+                <el-date-picker clearable v-model="form.row.<%= fieldName %>" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["edit_disable"].ToString().ToLower() %>"></el-date-picker>
                 <% } else if((string)ExtInfo[fieldName]["display"] == "date") { %>
                 <%-- 日期 --%>
-                <el-date-picker clearable v-model="form.row.<%= fieldName %>" type="date" value-format="YYYY-MM-DD" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>"></el-date-picker>
+                <el-date-picker clearable v-model="form.row.<%= fieldName %>" type="date" value-format="YYYY-MM-DD" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["edit_disable"].ToString().ToLower() %>"></el-date-picker>
                 <% } else if((string)ExtInfo[fieldName]["display"] == "imageUpload") { %>
                 <%-- 图片上传 --%>
-                <image-upload v-model="form.row.<%= fieldName %>" />
+                <image-upload v-model="form.row.<%= fieldName %>" :disabled="<%= ExtInfo[fieldName]["edit_disable"].ToString().ToLower() %>" />
                 <% } else if((string)ExtInfo[fieldName]["display"] == "fileUpload") { %>
                 <%-- 文件上传 --%>
-                <file-upload v-model="form.row.<%= fieldName %>" />
+                <file-upload v-model="form.row.<%= fieldName %>" :disabled="<%= ExtInfo[fieldName]["edit_disable"].ToString().ToLower() %>" />
                 <% } else if((string)ExtInfo[fieldName]["display"] == "editor") { %>
                 <%-- 富文本控件 --%>
-                <editor v-model="form.row.<%= fieldName %>" :min-height="192" />
+                <editor v-model="form.row.<%= fieldName %>" :min-height="192" :readOnly="<%= ExtInfo[fieldName]["edit_disable"].ToString().ToLower() %>" />
                 <% } %>
             </el-form-item>
             <% } %>
@@ -176,22 +176,22 @@ if(subTableName != "")
                     <%-- 循环字段 --%>
                     <% foreach(string fieldName in subFieldNames) { %>
                     <%-- 判断字段是否设置编辑 --%>
-                    <% if((Boolean)ExtSubTableInfo[fieldName]["edit"] == true) { %>
+                    <% if((bool)ExtSubTableInfo[fieldName]["edit"] == true) { %>
                     <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>">
-                        <% if((Boolean)ExtSubTableInfo[fieldName]["required"] == true) { %>
+                        <% if((bool)ExtSubTableInfo[fieldName]["required"] == true) { %>
                         <template #header> <span class="roc-require"></span><%= ExtSubTableInfo[fieldName]["label"] %> </template>
                         <% } %>
                         <template #default="{ row }">
                             <%-- 判断字段对应的表单类型 --%>
                             <% if((string)ExtSubTableInfo[fieldName]["display"] == "input") { %>
                             <%-- 文本框 --%>
-                            <el-input v-model="row.<%= fieldName %>" placeholder="<%= ExtSubTableInfo[fieldName]["label"] %>" />
+                            <el-input v-model="row.<%= fieldName %>" placeholder="<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>" />
                             <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "textarea") { %>
                             <%-- 文本域 --%>
-                            <el-input v-model="row.<%= fieldName %>" type="textarea" placeholder="<%= ExtSubTableInfo[fieldName]["label"] %>" />
+                            <el-input v-model="row.<%= fieldName %>" type="textarea" placeholder="<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>" />
                             <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "select") { %>
                             <%-- 下拉框 --%>
-                            <el-select v-model="row.<%= fieldName %>" placeholder="<%= ExtSubTableInfo[fieldName]["label"] %>" clearable>
+                            <el-select v-model="row.<%= fieldName %>" placeholder="<%= ExtSubTableInfo[fieldName]["label"] %>" clearable :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>">
                                 <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
                                 <el-option label="请手动写入选项 或者 选择字典生成" value="" />
                                 <% } else { %>
@@ -200,7 +200,7 @@ if(subTableName != "")
                             </el-select>
                             <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "radio") { %>
                             <%-- 单选框 --%>
-                            <el-radio-group v-model="row.<%= fieldName %>">
+                            <el-radio-group v-model="row.<%= fieldName %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>">
                                 <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
                                 <el-radio label="1">请手动写入选项 或者 选择字典生成</el-radio>
                                 <% } else { %>
@@ -209,7 +209,7 @@ if(subTableName != "")
                             </el-radio-group>
                             <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox") { %>
                             <%-- 复选框 --%>
-                            <el-checkbox-group v-model="row.<%= fieldName %>">
+                            <el-checkbox-group v-model="row.<%= fieldName %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>">
                                 <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
                                 <el-checkbox label="1">请手动写入选项 或者 选择字典生成</el-checkbox>
                                 <% } else { %>
@@ -218,19 +218,19 @@ if(subTableName != "")
                             </el-checkbox-group>
                             <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "datetime") { %>
                             <%-- 日期时间 --%>
-                            <el-date-picker clearable v-model="row.<%= fieldName %>" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="<%= ExtSubTableInfo[fieldName]["label"] %>"></el-date-picker>
+                            <el-date-picker clearable v-model="row.<%= fieldName %>" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>"></el-date-picker>
                             <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "date") { %>
                             <%-- 日期 --%>
-                            <el-date-picker clearable v-model="row.<%= fieldName %>" type="date" value-format="YYYY-MM-DD" placeholder="<%= ExtSubTableInfo[fieldName]["label"] %>"></el-date-picker>
+                            <el-date-picker clearable v-model="row.<%= fieldName %>" type="date" value-format="YYYY-MM-DD" placeholder="<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>"></el-date-picker>
                             <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "imageUpload") { %>
                             <%-- 图片上传 --%>
-                            <image-upload v-model="row.<%= fieldName %>" />
+                            <image-upload v-model="row.<%= fieldName %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>" />
                             <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "fileUpload") { %>
                             <%-- 文件上传 --%>
-                            <file-upload v-model="row.<%= fieldName %>" />
+                            <file-upload v-model="row.<%= fieldName %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>" />
                             <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "editor") { %>
                             <%-- 富文本控件 --%>
-                            <editor v-model="row.<%= fieldName %>" :min-height="192" />
+                            <editor v-model="row.<%= fieldName %>" :min-height="192" :readOnly="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>" />
                             <% } %>
                         </template>
                     </el-table-column>
@@ -294,8 +294,27 @@ const data = reactive({
                 continue;
             }
         %>
-        <% if((Boolean)ExtInfo[fieldName]["edit"] == true && (Boolean)ExtInfo[fieldName]["required"] == true) { %>
-        <%= fieldName %>: [{ required: true, message: '<%= ExtInfo[fieldName]["label"] %>必填', trigger: 'change' }],
+        <% if((bool)ExtInfo[fieldName]["edit"] == true) { %>
+        <%= fieldName %>: [
+            <% if((bool)ExtInfo[fieldName]["required"] == true) { %>
+            <%-- 必填验证 --%>
+            { required: true, message: '<%= ExtInfo[fieldName]["label"] %>必填', trigger: 'change' },
+            <% } %>
+            <% if((string)ExtInfo[fieldName]["rules"] != "" && (string)ExtInfo[fieldName]["rules"] != "0") { %>
+            <%-- 正则验证 --%>
+            <% foreach(JToken item in ExtInfo[fieldName]["rules_detail"]) { %>
+            <%
+                string message = "";
+                if((string)item["memo"] != "") {
+                    message = (string)ExtInfo[fieldName]["label"] + (string)item["memo"];
+                } else {
+                    message = (string)ExtInfo[fieldName]["label"] + "格式不正确";
+                }
+            %>
+            { pattern: '<%= item["value"] %>', message: '<%= message %>', trigger: 'change' },
+            <% } %>
+            <% } %>
+        ],
         <% } %>
         <% } %>
     },
@@ -359,7 +378,7 @@ function reset() {
             }
         %>
         <%-- 判断字段是否设置添加 --%>
-        <% if((Boolean)ExtInfo[fieldName]["edit"] == true) { %>
+        <% if((bool)ExtInfo[fieldName]["edit"] == true) { %>
         <%-- 判断字段对应的表单类型 --%>
         <% if((string)ExtInfo[fieldName]["display"] == "checkbox") { %>
         <%= fieldName %>: [],
@@ -393,7 +412,7 @@ function handleEdit(row) {
 /** 子表数据 */
 const formSubTable = {
     <% foreach(string fieldName in subFieldNames) { %>
-    <% if((Boolean)ExtSubTableInfo[fieldName]["edit"] == true) { %>
+    <% if((bool)ExtSubTableInfo[fieldName]["edit"] == true) { %>
     <%= fieldName %>: null,
     <% } %>
     <% } %>
@@ -422,11 +441,31 @@ function checkSubTableForm(formDataList) {
     for (const row of formDataList) {
         for (const rowKey in row) {
             <% foreach(string fieldName in subFieldNames) { %>
-            <% if((Boolean)ExtSubTableInfo[fieldName]["edit"] == true && (Boolean)ExtSubTableInfo[fieldName]["required"] == true) { %>
+            <% if((bool)ExtSubTableInfo[fieldName]["edit"] == true) { %>
+            <% if((bool)ExtSubTableInfo[fieldName]["required"] == true) { %>
+            <%-- 必填验证 --%>
             if (rowKey === '<%= fieldName %>' && !row[rowKey]) {
                 proxy.$modal.msgError(`明细<%= ExtSubTableInfo[fieldName]["label"] %>不能为空`)
                 return false
             }
+            <% } %>
+            <% if((string)ExtSubTableInfo[fieldName]["rules"] != "" && (string)ExtSubTableInfo[fieldName]["rules"] != "0") { %>
+            <%-- 正则验证 --%>
+            <% foreach(JToken item in ExtSubTableInfo[fieldName]["rules_detail"]) { %>
+            <%
+                string message = "";
+                if((string)item["memo"] != "") {
+                    message = (string)ExtSubTableInfo[fieldName]["label"] + (string)item["memo"];
+                } else {
+                    message = (string)ExtSubTableInfo[fieldName]["label"] + "格式不正确";
+                }
+            %>
+            if (rowKey === '<%= fieldName %>' && !new RegExp('<%= item["value"] %>').test(row[rowKey])) {
+                proxy.$modal.msgError(`明细<%= message %>`)
+                return false
+            }
+            <% } %>
+            <% } %>
             <% } %>
             <% } %>
         }

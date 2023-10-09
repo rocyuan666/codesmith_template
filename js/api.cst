@@ -52,6 +52,21 @@ export function list<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
 }
 
 /**
+ * 导出 <%= SourceTable.Description %> 列表
+ * @param {import('@/views/<%= SnakeFormatHump(SourceTable.Name) %>/index.vue').QueryParams} sendData
+ * @returns {Promise<ActionResult<{rows: <%= SnakeFormatHump(SourceTable.Name, true) %>[], total: Number}>>}
+ */
+export function export<%= SnakeFormatHump(SourceTable.Name, true) %>(sendData) {
+    /**@type {import('axios').AxiosRequestConfig} */
+    const sendObj = {
+        url: '/api/<%= SnakeFormatHump(SourceTable.Name, true) %>/export',
+        method: 'GET',
+        params: sendData,
+    }
+    return request(sendObj)
+}
+
+/**
  * 查询 <%= SourceTable.Description %> 详细
  * @param {{id: Number}} sendData
  * @returns {Promise<ActionResult<<%= SnakeFormatHump(SourceTable.Name, true) %>>>}

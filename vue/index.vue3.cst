@@ -330,7 +330,7 @@ if(subTableName != "")
                     <el-button link type="primary" icon="Edit" @click="handleEdit(row)" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit']" v-autoBlur>修改</el-button>
                     <% } %>
                     <% if((bool)ExtJson["btn_del"]) { %>
-                    <el-button link type="primary" icon="Delete" @click="handleDelete(row)" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.del']" v-autoBlur>删除</el-button>
+                    <el-button link type="danger" icon="Delete" @click="handleDelete(row)" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.del']" v-autoBlur>删除</el-button>
                     <% } %>
                 </template>
             </el-table-column>
@@ -458,7 +458,7 @@ function handleAdd() {
 
 /**
  * 修改按钮操作
- * @param {import('@/api/faAdmin').FaAdmin} row
+ * @param {import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %> | Event} row
  */
 function handleEdit(row) {
     const newRow = JSON.parse(JSON.stringify(row))
@@ -472,7 +472,7 @@ function handleEdit(row) {
 function handleDelete(row) {
     const _ids = row.<%= SourceTable.PrimaryKey.MemberColumns[0].Name %> || ids.value
     proxy.$modal
-        .confirm('是否确认删除编号为"' + _ids + '"的数据项？')
+        .confirm('是否确认删除<%= ExtInfo[SourceTable.PrimaryKey.MemberColumns[0].Name]["label"] %>为"' + _ids + '"的数据项？')
         .then(function () {
             return del<%= SnakeFormatHump(SourceTable.Name, true) %>({ ids: _ids })
         })

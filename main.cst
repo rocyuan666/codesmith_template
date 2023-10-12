@@ -39,6 +39,9 @@ CodeTemplate vue3AddTemplate = GetCodeTemplate("\\vue\\add.vue3.cst");
 // vue3 - 编辑
 CodeTemplate vue3EditTemplate = GetCodeTemplate("\\vue\\edit.vue3.cst");
 
+// vue3 - 详情
+CodeTemplate vue3DetailTemplate = GetCodeTemplate("\\vue\\detail.vue3.cst");
+
 // js - api
 CodeTemplate jsApiTemplate = GetCodeTemplate("\\js\\api.cst");
 
@@ -72,6 +75,10 @@ for(int i = 0; i < Tables.Count; i++)
     // vue3 - 编辑
     string vue3EditDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue\\views\\" + SnakeFormatHump(Tables[i].Name) + "\\edit.vue";
     RenderFileUsingProperties(vue3EditDirectory, true, ref vue3EditTemplate, Tables[i], extTableJson);
+    
+    // vue3 - 详情
+    string vue3DetailDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue\\views\\" + SnakeFormatHump(Tables[i].Name) + "\\detail.vue";
+    // RenderFileUsingProperties(vue3DetailDirectory, true, ref vue3DetailTemplate, Tables[i], extTableJson);
 
     // js - api
     string jsApiDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue\\api\\" + SnakeFormatHump(Tables[i].Name) + ".js";

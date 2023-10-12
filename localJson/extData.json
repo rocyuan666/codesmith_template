@@ -704,10 +704,10 @@
     "sub_table": "",
     "sub_table_field": "",
     "table_field": "",
-    "btn_add": false,
-    "btn_edit": false,
-    "btn_del": false,
-    "btn_export": false,
+    "btn_add": "false",
+    "btn_edit": "false",
+    "btn_del": "false",
+    "btn_export": "false",
     "field": {
       "id": {
         "label": "ID",
@@ -1309,7 +1309,7 @@
         "list": true,
         "search": "true",
         "required": "true",
-        "unique": false,
+        "unique": "false",
         "query": "LIKE",
         "display": "input",
         "dict": "0",
@@ -1326,7 +1326,7 @@
         "list": true,
         "search": "false",
         "required": "true",
-        "unique": false,
+        "unique": "false",
         "query": 0,
         "display": "input",
         "dict": 0,
@@ -1764,13 +1764,12 @@
   },
   "asphalt_sale_contract": {
     "sub_table": "asphalt_sale_contract_detail",
-    "sub_table_field": "",
+    "sub_table_field": "asphalt_sale_contract_id",
     "table_field": "id",
     "btn_add": "true",
     "btn_edit": "true",
     "btn_del": "true",
     "btn_export": "true",
-    "sub_field": "asphalt_sale_contract_id",
     "field": {
       "id": {
         "label": "ID",
@@ -2070,14 +2069,8 @@
         "query": 0,
         "display": "input",
         "dict": 0,
-        "rules": "guize",
-        "rules_detail": [
-          {
-            "name": "密码",
-            "value": "^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z_]{6,}$",
-            "memo": "长度需6位以上，只能包含数字字母及下划线，并且必须包含数字和字母"
-          }
-        ]
+        "rules": "0",
+        "rules_detail": []
       },
       "create_time": {
         "label": "创建时间",
@@ -2311,13 +2304,12 @@
   },
   "asphalt_purchase_contract": {
     "sub_table": "asphalt_purchase_contract_detail",
-    "sub_table_field": "",
+    "sub_table_field": "asphalt_purchase_contract_id",
     "table_field": "id",
     "btn_add": "true",
     "btn_edit": "true",
     "btn_del": "true",
     "btn_export": "true",
-    "sub_field": "asphalt_purchase_contract_id",
     "field": {
       "id": {
         "label": "ID",
@@ -2556,13 +2548,12 @@
   },
   "asphalt_purchase_plan": {
     "sub_table": "asphalt_purchase_plan_detail",
-    "sub_table_field": "",
+    "sub_table_field": "asphalt_purchase_plan_id",
     "table_field": "id",
     "btn_add": "true",
     "btn_edit": "true",
     "btn_del": "true",
     "btn_export": "true",
-    "sub_field": "asphalt_purchase_plan_id",
     "field": {
       "id": {
         "label": "ID",
@@ -2864,13 +2855,12 @@
   },
   "asphalt_sale_plan": {
     "sub_table": "asphalt_sale_plan_detail",
-    "sub_table_field": "",
+    "sub_table_field": "asphalt_sale_plan_id",
     "table_field": "id",
     "btn_add": "true",
     "btn_edit": "true",
     "btn_del": "true",
     "btn_export": "true",
-    "sub_field": "asphalt_sale_plan_id",
     "field": {
       "id": {
         "label": "ID",
@@ -3257,13 +3247,12 @@
   },
   "asphalt_warehouse_check": {
     "sub_table": "asphalt_warehouse_check_detail",
-    "sub_table_field": "",
+    "sub_table_field": "asphalt_warehouse_check_id",
     "table_field": "id",
     "btn_add": "true",
     "btn_edit": "true",
     "btn_del": "true",
     "btn_export": "true",
-    "sub_field": "asphalt_warehouse_check_id",
     "field": {
       "id": {
         "label": "ID",
@@ -3536,13 +3525,12 @@
   },
   "asphalt_warehouse_in": {
     "sub_table": "asphalt_warehouse_in_detail",
-    "sub_table_field": "",
+    "sub_table_field": "asphalt_warehouse_in_id",
     "table_field": "id",
     "btn_add": "true",
     "btn_edit": "true",
     "btn_del": "true",
     "btn_export": "true",
-    "sub_field": "asphalt_warehouse_in_id",
     "field": {
       "id": {
         "label": "ID",
@@ -3980,13 +3968,12 @@
   },
   "asphalt_warehouse_out": {
     "sub_table": "asphalt_warehouse_out_detail",
-    "sub_table_field": "",
+    "sub_table_field": "asphalt_warehouse_out_id",
     "table_field": "id",
     "btn_add": "true",
     "btn_edit": "true",
     "btn_del": "true",
     "btn_export": "true",
-    "sub_field": "asphalt_warehouse_out_id",
     "field": {
       "id": {
         "label": "ID",
@@ -4310,13 +4297,12 @@
   },
   "asphalt_warehouse_product_in": {
     "sub_table": "asphalt_warehouse_product_in_detail",
-    "sub_table_field": "",
+    "sub_table_field": "asphalt_warehouse_product_in_id",
     "table_field": "id",
     "btn_add": "true",
     "btn_edit": "true",
     "btn_del": "true",
     "btn_export": "true",
-    "sub_field": "asphalt_warehouse_product_in_id",
     "field": {
       "id": {
         "label": "ID",
@@ -4589,13 +4575,12 @@
   },
   "asphalt_warehouse_product_out": {
     "sub_table": "asphalt_warehouse_product_out_detail",
-    "sub_table_field": "",
+    "sub_table_field": "asphalt_warehouse_product_out_id",
     "table_field": "id",
     "btn_add": "true",
     "btn_edit": "true",
     "btn_del": "true",
     "btn_export": "true",
-    "sub_field": "asphalt_warehouse_product_out_id",
     "field": {
       "id": {
         "label": "ID",
@@ -5032,13 +5017,12 @@
   },
   "asphalt_product": {
     "sub_table": "asphalt_product_detail",
-    "sub_table_field": "",
+    "sub_table_field": "asphalt_product_id",
     "table_field": "id",
     "btn_add": "true",
     "btn_edit": "true",
     "btn_del": "true",
     "btn_export": "true",
-    "sub_field": "id",
     "field": {
       "id": {
         "label": "ID",

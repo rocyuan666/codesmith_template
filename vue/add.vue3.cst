@@ -272,8 +272,8 @@ const <%= dicts[i] %> = inject('<%= dicts[i] %>', () => [])
  * 原data 类型
  * @typedef TargetData
  * @property {Object} form
- * @property {import('@/api/faAdmin').FaAdmin | Object} form.row
- * @property {import('element-plus').FormRules<import('@/api/faAdmin').FaAdmin>} rules
+ * @property {import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %> | Object} form.row
+ * @property {import('element-plus').FormRules<import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %>>} rules
  */
 
 /**@type {UnwrapNestedRefs<TargetData>} */

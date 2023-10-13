@@ -297,10 +297,10 @@
     "sub_table": "",
     "sub_table_field": "",
     "table_field": "",
-    "btn_add": false,
-    "btn_edit": false,
-    "btn_del": false,
-    "btn_export": false,
+    "btn_add": "true",
+    "btn_edit": "true",
+    "btn_del": "true",
+    "btn_export": "false",
     "field": {
       "id": {
         "label": "ID",

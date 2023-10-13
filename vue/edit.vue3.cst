@@ -99,7 +99,7 @@ if(subTableName != "")
 <template>
     <!-- draggable -->
     <el-dialog :title="title" v-model="open" width="1200px" :close-on-click-modal="false" append-to-body>
-        <el-form ref="<%= SnakeFormatHump(SourceTable.Name) %>Ref" :model="form.row" :rules="rules" label-width="100px">
+        <el-form ref="<%= SnakeFormatHump(SourceTable.Name) %>Ref" :model="form.row" :rules="rules" label-width="auto">
             <%-- 循环字段 --%>
             <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
             <%
@@ -248,8 +248,8 @@ if(subTableName != "")
         </el-form>
         <template #footer>
             <div class="dialog-footer">
-                <el-button type="primary" @click="submitForm" v-autoBlur>确 定</el-button>
                 <el-button @click="cancel" v-autoBlur>取 消</el-button>
+                <el-button type="primary" @click="submitForm" v-autoBlur>确 定</el-button>
             </div>
         </template>
     </el-dialog>
@@ -298,7 +298,7 @@ const data = reactive({
         <%= fieldName %>: [
             <% if((bool)ExtInfo[fieldName]["required"] == true) { %>
             <%-- 必填验证 --%>
-            { required: true, message: '<%= ExtInfo[fieldName]["label"] %>必填', trigger: 'change' },
+            { required: true, message: '<%= ExtInfo[fieldName]["label"] %>不能为空', trigger: 'blur' },
             <% } %>
             <% if((string)ExtInfo[fieldName]["rules"] != "" && (string)ExtInfo[fieldName]["rules"] != "0") { %>
             <%-- 正则验证 --%>
@@ -311,7 +311,7 @@ const data = reactive({
                     message = (string)ExtInfo[fieldName]["label"] + "格式不正确";
                 }
             %>
-            { pattern: '<%= item["value"] %>', message: '<%= message %>', trigger: 'change' },
+            { pattern: '<%= item["value"] %>', message: '<%= message %>', trigger: 'blur' },
             <% } %>
             <% } %>
         ],

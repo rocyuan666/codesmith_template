@@ -87,7 +87,7 @@ if(subTableName != "")
     <div class="app-container">
         <% if(isSearch) { %>
         <!-- 查询条件 -->
-        <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px" @submit.prevent>
+        <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="auto" @submit.prevent>
         <%-- 循环字段 --%>
         <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
             <% string fieldName = SourceTable.Columns[i].Name; %>
@@ -161,8 +161,8 @@ if(subTableName != "")
             <% } %>
         <% } %>
             <el-form-item>
-                <el-button type="primary" icon="Search" @click="handleQuery" v-autoBlur>搜索</el-button>
-                <el-button icon="Refresh" @click="resetQuery" v-autoBlur>重置</el-button>
+                <el-button type="primary" @click="handleQuery" v-autoBlur>搜索</el-button>
+                <el-button @click="resetQuery" v-autoBlur>重置</el-button>
             </el-form-item>
         </el-form>
         <% } %>
@@ -196,7 +196,7 @@ if(subTableName != "")
             <!-- 子表数据展示 -->
             <el-table-column type="expand">
                 <template #default="{ row }">
-                    <el-table :data="subTableData[`subTableList${row.id}`]" empty-text="暂无数据~" style="width: 90%; margin: 0 auto">
+                    <el-table class="sub-table" :data="subTableData[`subTableList${row.id}`]" empty-text="暂无数据~" :cell-style="{ padding: '8px 20px', backgroundColor: '#f8f8f9' }" :header-cell-style="{ padding: '0 20px' }">
                         <%-- 循环字段 --%>
                         <% foreach(string fieldName in subFieldNames) { %>
                         <%-- 判断字段是否设置列表显示 --%>
@@ -243,7 +243,7 @@ if(subTableName != "")
                         <% } %>
                         <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "datetime") { %>
                         <%-- 日期时间 --%>
-                        <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" width="180" />
+                        <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" width="200" />
                         <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "date") { %>
                         <%-- 日期 --%>
                         <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" width="180" />
@@ -327,10 +327,10 @@ if(subTableName != "")
             <el-table-column label="操作" align="center" fixed="right" class-name="small-padding fixed-width" width="236" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit', '<%= SnakeFormatHump(SourceTable.Name, true) %>.del']">
                 <template #default="{ row }">
                     <% if((bool)ExtJson["btn_edit"]) { %>
-                    <el-button link type="primary" icon="Edit" @click="handleEdit(row)" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit']" v-autoBlur>修改</el-button>
+                    <el-button link type="primary" @click="handleEdit(row)" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit']" v-autoBlur>修改</el-button>
                     <% } %>
                     <% if((bool)ExtJson["btn_del"]) { %>
-                    <el-button link type="danger" icon="Delete" @click="handleDelete(row)" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.del']" v-autoBlur>删除</el-button>
+                    <el-button link type="danger" @click="handleDelete(row)" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.del']" v-autoBlur>删除</el-button>
                     <% } %>
                 </template>
             </el-table-column>

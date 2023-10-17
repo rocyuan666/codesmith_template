@@ -254,6 +254,9 @@ if(subTableName != "")
                                 <image-preview :src="row.<%= fieldName %>" :width="50" :height="50" />
                             </template>
                         </el-table-column>
+                        <% } else { %>
+                        <%-- 否则直接展示 --%>
+                        <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
                         <% } %>
                         <% } %>
                         <% } %>
@@ -319,6 +322,9 @@ if(subTableName != "")
                     <image-preview :src="row.<%= fieldName %>" :width="50" :height="50" />
                 </template>
             </el-table-column>
+            <% } else { %>
+            <%-- 否则文本框 --%>
+            <el-table-column label="<%= ExtInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>" />
             <% } %>
             <% } %>
             <% } %>

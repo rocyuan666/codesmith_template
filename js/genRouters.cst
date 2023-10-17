@@ -8,17 +8,70 @@
 <!-- #include file="..\\common\\mapTypeTransform.cst" -->
 export const genRouters = [
     {
-        path: '/cic',
-        name: 'Cic',
+        path: '/baseManage',
+        name: 'BaseManage',
+        redirect: 'noRedirect',
+        hidden: false,
+        component: () => import('@/layout'),
+        alwaysShow: true,
+        meta: {
+            icon: 'Menu',
+            link: null,
+            noCache: false,
+            title: '基础管理',
+        },
+        permissions: ['User.list', 'Role.list', 'RolePermission.permissionList'],
+        children: [
+            {
+                path: 'user',
+                name: 'User',
+                hidden: false,
+                component: () => import('@/views/user'),
+                meta: {
+                    icon: '',
+                    link: null,
+                    noCache: false,
+                    title: '用户管理',
+                },
+                permissions: ['User.list'],
+            },
+            {
+                path: 'role',
+                name: 'Role',
+                hidden: false,
+                component: () => import('@/views/role'),
+                permissions: ['Role.list'],
+                meta: {
+                    icon: '',
+                    link: null,
+                    noCache: false,
+                    title: '角色管理',
+                },
+            },
+            {
+                path: 'userPermission',
+                name: 'UserPermission',
+                hidden: false,
+                component: () => import('@/views/permission'),
+                permissions: ['RolePermission.permissionList'],
+                meta: {
+                    icon: '',
+                    link: null,
+                    noCache: false,
+                    title: '角色权限',
+                },
+            },
+        ],
+    },
+    {
+        path: '/manage',
+        name: 'Manage',
         redirect: 'noRedirect',
         hidden: false,
         component: () => import('@/layout'),
         alwaysShow: true,
         permissions: [
-            'User.list',
-            'UserPermission.list',
             <% for(int i = 0; i < Tables.Count; i++) { %>
-            <% if(Tables[i].Name == "user") continue; %>
             '<%= SnakeFormatHump(Tables[i].Name, true) %>.list',
             <% } %>
         ],
@@ -29,34 +82,7 @@ export const genRouters = [
             title: '管理页面',
         },
         children: [
-            {
-                path: 'user',
-                name: 'User',
-                hidden: false,
-                component: () => import('@/views/user'),
-                permissions: ['User.list'],
-                meta: {
-                    icon: 'Menu',
-                    link: null,
-                    noCache: false,
-                    title: '用户',
-                },
-            },
-            {
-                path: 'userPermission',
-                name: 'UserPermission',
-                hidden: false,
-                component: () => import('@/views/permission'),
-                permissions: ['UserPermission.list'],
-                meta: {
-                    icon: 'Menu',
-                    link: null,
-                    noCache: false,
-                    title: '用户权限',
-                },
-            },
             <% for(int i = 0; i < Tables.Count; i++) { %>
-            <% if(Tables[i].Name == "user") continue; %>
             {
                 path: '<%= SnakeFormatHump(Tables[i].Name) %>',
                 name: '<%= SnakeFormatHump(Tables[i].Name, true) %>',
@@ -64,7 +90,7 @@ export const genRouters = [
                 component: () => import('@/views/<%= SnakeFormatHump(Tables[i].Name) %>'),
                 permissions: ['<%= SnakeFormatHump(Tables[i].Name, true) %>.list'],
                 meta: {
-                    icon: 'Menu',
+                    icon: '',
                     link: null,
                     noCache: false,
                     title: '<%= Tables[i].Description == "" ? SnakeFormatHump(Tables[i].Name) : Tables[i].Description %>',

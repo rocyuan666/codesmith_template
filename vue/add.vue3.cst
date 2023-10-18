@@ -311,7 +311,7 @@ const data = reactive({
                     message = (string)ExtInfo[fieldName]["label"] + "格式不正确";
                 }
             %>
-            { pattern: '<%= item["value"] %>', message: '<%= message %>', trigger: 'blur' },
+            { pattern: <%= item["value"] %>, message: '<%= message %>', trigger: 'blur' },
             <% } %>
             <% } %>
         ],
@@ -453,7 +453,7 @@ function checkSubTableForm(formDataList) {
                     message = (string)ExtSubTableInfo[fieldName]["label"] + "格式不正确";
                 }
             %>
-            if (rowKey === '<%= fieldName %>' && !new RegExp('<%= item["value"] %>').test(row[rowKey])) {
+            if (rowKey === '<%= fieldName %>' && !(<%= item["value"] %>.test(row[rowKey]))) {
                 proxy.$modal.msgError(`明细<%= message %>`)
                 return false
             }

@@ -225,7 +225,7 @@ foreach(string fieldName in subFieldNames) {
                     %>
                     <el-table-column label="<%= subTableLabel %>" align="center" prop="<%= fieldName %>">
                         <% if((bool)ExtSubTableInfo[fieldName]["required"] == true) { %>
-                        <template #header> <span class="roc-require"></span><%= ExtSubTableInfo[fieldName]["label"] %> </template>
+                        <template #header> <span class="roc-require"></span><%= subTableLabel %> </template>
                         <% } %>
                         <template #default="{ row }">
                             <%-- 判断字段对应的表单类型 --%>

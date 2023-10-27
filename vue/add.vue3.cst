@@ -31,6 +31,16 @@ if(subTableName != "") {
 
 #endregion
 
+#region 主表表名集合（按配置顺序排列）
+
+List<string> tableFieldNames = new List<string>();
+foreach(JToken item in ExtInfo) {
+    string fieldName = item.Path.Split('.')[item.Path.Split('.').Length-1];
+    tableFieldNames.Add(fieldName);
+}
+
+#endregion
+
 #region 添加是否有配置校验
 
 // 主表是否有配置校验
@@ -38,20 +48,26 @@ Boolean isAddCheck = false;
 for(int i = 0; i < SourceTable.Columns.Count; i++)
 {
     string fieldName = SourceTable.Columns[i].Name;
-    if((bool)ExtInfo[fieldName]["add"] == true && (bool)ExtInfo[fieldName]["required"] == true)
+    if((bool)ExtInfo[fieldName]["add"] == true)
     {
-        isAddCheck = true;
-        break;
+        if((bool)ExtInfo[fieldName]["required"] == true || (string)ExtInfo[fieldName]["rules"] == "0" || (string)ExtInfo[fieldName]["rules"] == "")
+        {
+            isAddCheck = true;
+            break;
+        }
     }
 }
 
 // 子表是否有配置校验
 Boolean isSubTableAddCheck = false;
 foreach(string fieldName in subFieldNames) {
-    if((bool)ExtSubTableInfo[fieldName]["add"] == true && (bool)ExtSubTableInfo[fieldName]["required"] == true)
+    if((bool)ExtSubTableInfo[fieldName]["add"] == true)
     {
-        isSubTableAddCheck = true;
-        break;
+        if((bool)ExtSubTableInfo[fieldName]["required"] == true || (string)ExtSubTableInfo[fieldName]["rules"] == "0" || (string)ExtSubTableInfo[fieldName]["rules"] == "")
+        {
+            isSubTableAddCheck = true;
+            break;
+        }
     }
 }
 
@@ -67,7 +83,7 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
     string fieldName = SourceTable.Columns[i].Name;
     if((string)ExtInfo[fieldName]["dict"] != "" && (string)ExtInfo[fieldName]["dict"] != "0")
     {
-        if((string)ExtInfo[fieldName]["display"] == "select" || (string)ExtInfo[fieldName]["display"] == "radio" || (string)ExtInfo[fieldName]["display"] == "checkbox")
+        if((string)ExtInfo[fieldName]["display"] == "select" || (string)ExtInfo[fieldName]["display"] == "selectMultiple" || (string)ExtInfo[fieldName]["display"] == "radio" || (string)ExtInfo[fieldName]["display"] == "checkbox")
         {
             if(!dicts.Contains((string)ExtInfo[fieldName]["dict"]))
             {
@@ -83,7 +99,7 @@ if(subTableName != "")
     {
         if((string)ExtSubTableInfo[fieldName]["dict"] != "" && (string)ExtSubTableInfo[fieldName]["dict"] != "0")
         {
-            if((string)ExtSubTableInfo[fieldName]["display"] == "select" || (string)ExtSubTableInfo[fieldName]["display"] == "radio" || (string)ExtSubTableInfo[fieldName]["display"] == "checkbox")
+            if((string)ExtSubTableInfo[fieldName]["display"] == "select" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "radio" || (string)ExtSubTableInfo[fieldName]["display"] == "checkbox")
         {
             if(!dicts.Contains((string)ExtSubTableInfo[fieldName]["dict"]))
             {
@@ -95,16 +111,31 @@ if(subTableName != "")
 }
 
 #endregion
+
+#region 子表是否需要处理数据
+bool isHandleSubTableData = false;
+foreach(string fieldName in subFieldNames) {
+    if((bool)ExtSubTableInfo[fieldName]["add"] == true) {
+        if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple") {
+            isHandleSubTableData = true;
+            break;
+        } else if((string)ExtSubTableInfo[fieldName]["display"] == "input" || (string)ExtSubTableInfo[fieldName]["display"] == "inputNumber") {
+            if((string)ExtSubTableInfo[fieldName]["rate"] != "") {
+                isHandleSubTableData = true;
+                break;
+            }
+        }
+    }
+}
+#endregion
 %>
 <template>
     <!-- draggable -->
     <el-dialog :title="title" v-model="open" width="1200px" :close-on-click-modal="false" append-to-body>
         <el-form ref="<%= SnakeFormatHump(SourceTable.Name) %>Ref" :model="form.row" :rules="rules" label-width="auto">
             <%-- 循环字段 --%>
-            <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+            <% foreach(string fieldName in tableFieldNames) { %>
             <%
-                // 字段名
-                string fieldName = SourceTable.Columns[i].Name;
                 // 字段是否是主键
                 Boolean isPK = SourceTable.PrimaryKey.MemberColumns[0].Name == fieldName;
                 if(isPK)
@@ -114,11 +145,34 @@ if(subTableName != "")
             %>
             <%-- 判断字段是否设置添加 --%>
             <% if((bool)ExtInfo[fieldName]["add"] == true) { %>
+            <%
+                // 单位
+                string unit = (string)ExtInfo[fieldName]["unit"];
+            %>
             <el-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="<%= fieldName %>">
                 <%-- 判断字段对应的表单类型 --%>
                 <% if((string)ExtInfo[fieldName]["display"] == "input") { %>
                 <%-- 文本框 --%>
+                <% if(unit == "") { %>
+                <%-- 无单位 --%>
                 <el-input v-model="form.row.<%= fieldName %>" placeholder="请输入<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>" />
+                <% } else { %>
+                <%-- 有单位 --%>
+                <el-input v-model="form.row.<%= fieldName %>" placeholder="请输入<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>">
+                    <template #append><%= unit %></template>
+                </el-input>
+                <% } %>
+                <% } else if((string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
+                <%-- 数字框 --%>
+                <% if(unit == "") { %>
+                <%-- 无单位 --%>
+                <el-input v-model="form.row.<%= fieldName %>" placeholder="请输入<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>" type="number" />
+                <% } else { %>
+                <%-- 有单位 --%>
+                <el-input v-model="form.row.<%= fieldName %>" placeholder="请输入<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>" type="number">
+                    <template #append><%= unit %></template>
+                </el-input>
+                <% } %>
                 <% } else if((string)ExtInfo[fieldName]["display"] == "textarea") { %>
                 <%-- 文本域 --%>
                 <el-input v-model="form.row.<%= fieldName %>" type="textarea" placeholder="请输入<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>" />
@@ -131,8 +185,17 @@ if(subTableName != "")
                     <el-option v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :value="dict.value" />
                     <% } %>
                 </el-select>
-               <% } else if((string)ExtInfo[fieldName]["display"] == "radio") { %>
-               <%-- 单选框 --%>
+                <% } else if((string)ExtInfo[fieldName]["display"] == "selectMultiple") { %>
+                <%-- 下拉框（多选） --%>
+                <el-select v-model="form.row.<%= fieldName %>" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>" clearable :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>" multiple>
+                    <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
+                    <el-option label="请手动写入选项 或者 选择字典生成" value="" />
+                    <% } else { %>
+                    <el-option v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :value="dict.value" />
+                    <% } %>
+                </el-select>
+                <% } else if((string)ExtInfo[fieldName]["display"] == "radio") { %>
+                <%-- 单选框 --%>
                 <el-radio-group v-model="form.row.<%= fieldName %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>">
                     <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
                     <el-radio label="1">请手动写入选项 或者 选择字典生成</el-radio>
@@ -158,9 +221,15 @@ if(subTableName != "")
                 <% } else if((string)ExtInfo[fieldName]["display"] == "imageUpload") { %>
                 <%-- 图片上传 --%>
                 <image-upload v-model="form.row.<%= fieldName %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>" />
+                <% } else if((string)ExtInfo[fieldName]["display"] == "imageUploadMultiple") { %>
+                <%-- 图片上传（多） --%>
+                <image-upload v-model="form.row.<%= fieldName %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>" :limit="10" />
                 <% } else if((string)ExtInfo[fieldName]["display"] == "fileUpload") { %>
                 <%-- 文件上传 --%>
                 <file-upload v-model="form.row.<%= fieldName %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>" />
+                <% } else if((string)ExtInfo[fieldName]["display"] == "fileUploadMultiple") { %>
+                <%-- 文件上传（多） --%>
+                <file-upload v-model="form.row.<%= fieldName %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>" :limit="10" />
                 <% } else if((string)ExtInfo[fieldName]["display"] == "editor") { %>
                 <%-- 富文本控件 --%>
                 <editor v-model="form.row.<%= fieldName %>" :min-height="192" :readOnly="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>" />
@@ -177,7 +246,16 @@ if(subTableName != "")
                     <% foreach(string fieldName in subFieldNames) { %>
                     <%-- 判断字段是否设置添加 --%>
                     <% if((bool)ExtSubTableInfo[fieldName]["add"] == true) { %>
-                    <el-table-column label="<%= ExtSubTableInfo[fieldName]["label"] %>" align="center" prop="<%= fieldName %>">
+                    <%
+                        // 加单位
+                        string subTableLabel = (string)ExtSubTableInfo[fieldName]["label"];
+                        string subTableUnit = (string)ExtSubTableInfo[fieldName]["unit"];
+                        if(subTableUnit != "") {
+                            subTableLabel = subTableLabel + "（" + subTableUnit + "）";
+                        }
+                        
+                    %>
+                    <el-table-column label="<%= subTableLabel %>" align="center" prop="<%= fieldName %>">
                         <% if((bool)ExtSubTableInfo[fieldName]["required"] == true) { %>
                         <template #header> <span class="roc-require"></span><%= ExtSubTableInfo[fieldName]["label"] %> </template>
                         <% } %>
@@ -186,12 +264,24 @@ if(subTableName != "")
                             <% if((string)ExtSubTableInfo[fieldName]["display"] == "input") { %>
                             <%-- 文本框 --%>
                             <el-input v-model="row.<%= fieldName %>" placeholder="<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["add_disable"].ToString().ToLower() %>" />
+                            <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "inputNumber") { %>
+                            <%-- 数字框 --%>
+                            <el-input v-model="row.<%= fieldName %>" placeholder="<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["add_disable"].ToString().ToLower() %>" type="number" />
                             <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "textarea") { %>
                             <%-- 文本域 --%>
                             <el-input v-model="row.<%= fieldName %>" type="textarea" placeholder="<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["add_disable"].ToString().ToLower() %>" />
                             <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "select") { %>
                             <%-- 下拉框 --%>
                             <el-select v-model="row.<%= fieldName %>" placeholder="<%= ExtSubTableInfo[fieldName]["label"] %>" clearable :disabled="<%= ExtSubTableInfo[fieldName]["add_disable"].ToString().ToLower() %>">
+                                <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+                                <el-option label="请手动写入选项 或者 选择字典生成" value="" />
+                                <% } else { %>
+                                <el-option v-for="dict in <%= ExtSubTableInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :value="dict.value" />
+                                <% } %>
+                            </el-select>
+                            <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple") { %>
+                            <%-- 下拉框（多选） --%>
+                            <el-select v-model="row.<%= fieldName %>" placeholder="<%= ExtSubTableInfo[fieldName]["label"] %>" clearable :disabled="<%= ExtSubTableInfo[fieldName]["add_disable"].ToString().ToLower() %>" multiple>
                                 <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
                                 <el-option label="请手动写入选项 或者 选择字典生成" value="" />
                                 <% } else { %>
@@ -225,9 +315,15 @@ if(subTableName != "")
                             <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "imageUpload") { %>
                             <%-- 图片上传 --%>
                             <image-upload v-model="row.<%= fieldName %>" :disabled="<%= ExtSubTableInfo[fieldName]["add_disable"].ToString().ToLower() %>" />
+                            <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "imageUploadMultiple") { %>
+                            <%-- 图片上传（多） --%>
+                            <image-upload v-model="row.<%= fieldName %>" :disabled="<%= ExtSubTableInfo[fieldName]["add_disable"].ToString().ToLower() %>" :limit="10" />
                             <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "fileUpload") { %>
                             <%-- 文件上传 --%>
                             <file-upload v-model="row.<%= fieldName %>" :disabled="<%= ExtSubTableInfo[fieldName]["add_disable"].ToString().ToLower() %>" />
+                            <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "fileUploadMultiple") { %>
+                            <%-- 文件上传（多） --%>
+                            <file-upload v-model="row.<%= fieldName %>" :disabled="<%= ExtSubTableInfo[fieldName]["add_disable"].ToString().ToLower() %>" :limit="10" />
                             <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "editor") { %>
                             <%-- 富文本控件 --%>
                             <editor v-model="row.<%= fieldName %>" :min-height="192" :readOnly="<%= ExtSubTableInfo[fieldName]["add_disable"].ToString().ToLower() %> />
@@ -257,6 +353,7 @@ if(subTableName != "")
 
 <script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>Add">
 import { ref, getCurrentInstance, toRefs, reactive, inject } from 'vue'
+import { cloneDeep } from 'lodash-es'
 import { add<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
 
 const { proxy } = getCurrentInstance()
@@ -342,12 +439,54 @@ const emits = defineEmits(['updateList'])
 function submitForm() {
     proxy.$refs['<%= SnakeFormatHump(SourceTable.Name) %>Ref'].validate((valid) => {
         if (valid) {
+            const _form = cloneDeep(form.value)
             <% if(subTableName != "") { %>
+            <%--
+                子表：多选 数组格式 转换","分割字符串 & 系数处理
+            --%>
+            <% if(isHandleSubTableData) { %>
+            _form.row.row_details.forEach((rowItem) => {
+                // 子表提交数据处理
+                <% foreach(string fieldName in subFieldNames) { %>
+                <% if((bool)ExtSubTableInfo[fieldName]["add"] == true) { %>
+                <%-- 数组转字符串格式 --%>
+                <% if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple") { %>
+                rowItem.<%= fieldName %> = rowItem.<%= fieldName %>.join(',')
+                <% } %>
+                <%-- 系数处理 --%>
+                <% if((string)ExtSubTableInfo[fieldName]["display"] == "input" || (string)ExtSubTableInfo[fieldName]["display"] == "inputNumber") { %>
+                <% if((string)ExtSubTableInfo[fieldName]["rate"] != "") { %>
+                rowItem.<%= fieldName %> = proxy.calc(rowItem.<%= fieldName %>, <%= ExtSubTableInfo[fieldName]["rate"] %>, { decimal: 0, type: 'div' })
+                <% } %>
+                <% } %>
+                <% } %>
+                <% } %>
+            })
+            <% } %>
+            <%-- 子表验证 --%>
             <% if(isSubTableAddCheck) { %>
-            if (!checkSubTableForm(form.value.row.row_details)) return
+            if (!checkSubTableForm(_form.row.row_details)) return
             <% } %>
             <% } %>
-            add<%= SnakeFormatHump(SourceTable.Name, true) %>(form.value).then(() => {
+            <%--
+                主表：多选 数组格式 转换","分割字符串 & 系数处理
+            --%>
+            <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+            <% string fieldName = SourceTable.Columns[i].Name; %>
+            <% if((bool)ExtInfo[fieldName]["add"] == true) { %>
+            <%-- 数组转字符串格式 --%>
+            <% if((string)ExtInfo[fieldName]["display"] == "checkbox" || (string)ExtInfo[fieldName]["display"] == "selectMultiple") { %>
+            _form.row.<%= fieldName %> = _form.row.<%= fieldName %>.join(',')
+            <% } %>
+            <%-- 系数处理 --%>
+            <% if((string)ExtInfo[fieldName]["display"] == "input" || (string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
+            <% if((string)ExtInfo[fieldName]["rate"] != "") { %>
+            _form.row.<%= fieldName %> = proxy.calc(_form.row.<%= fieldName %>, <%= ExtInfo[fieldName]["rate"] %>, { decimal: 0, type: 'div' })
+            <% } %>
+            <% } %>
+            <% } %>
+            <% } %>
+            add<%= SnakeFormatHump(SourceTable.Name, true) %>(_form).then(() => {
                 proxy.$modal.msgSuccess('新增成功')
                 open.value = false
                 emits('updateList')
@@ -379,8 +518,8 @@ function reset() {
         %>
         <%-- 判断字段是否设置添加 --%>
         <% if((bool)ExtInfo[fieldName]["add"] == true) { %>
-        <%-- 判断字段对应的表单类型 --%>
-        <% if((string)ExtInfo[fieldName]["display"] == "checkbox") { %>
+        <%-- 多选 数组类型 --%>
+        <% if((string)ExtInfo[fieldName]["display"] == "checkbox" || (string)ExtInfo[fieldName]["display"] == "selectMultiple") { %>
         <%= fieldName %>: [],
         <% } else { %>
         <%= fieldName %>: null,
@@ -405,8 +544,14 @@ function handleAdd() {
 /** 子表数据 */
 const formSubTable = {
     <% foreach(string fieldName in subFieldNames) { %>
+    <%-- 判断字段是否设置添加 --%>
     <% if((bool)ExtSubTableInfo[fieldName]["add"] == true) { %>
+    <%-- 多选 数组类型 --%>
+    <% if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple") { %>
+    <%= fieldName %>: [],
+    <% } else { %>
     <%= fieldName %>: null,
+    <% } %>
     <% } %>
     <% } %>
 }

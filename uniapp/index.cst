@@ -1,0 +1,720 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Description="vue3模板" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="System.Collections.Generic" %>
+
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="所基于的表" %>
+<%@ Property Name="ExtJson" Type="JToken" Category="Context" Description="表额外数据" %>
+
+<!-- #include file="..\\common\\utils.cst" -->
+<!-- #include file="..\\common\\mapTypeTransform.cst" -->
+<%
+#region 准备子表数据
+
+// 表字段额外数据
+JToken ExtInfo = ExtJson["field"];
+// 子表名称
+string subTableName = (string)ExtJson["sub_table"];
+
+// 子表字段额外数据
+JToken ExtSubTableInfo = null;
+// 子表字段名集合
+List<string> subFieldNames = new List<string>();
+if(subTableName != "") {
+    ExtSubTableInfo = ExtJson["subTableJson"]["field"];
+    foreach(JToken x in ExtSubTableInfo) {
+        string fieldNameSub = x.Path.Split('.')[x.Path.Split('.').Length-1];
+        subFieldNames.Add(fieldNameSub);
+    }
+}
+
+#endregion
+
+#region 主表表名集合（按配置顺序排列）
+
+List<string> tableFieldNames = new List<string>();
+foreach(JToken item in ExtInfo) {
+    string fieldName = item.Path.Split('.')[item.Path.Split('.').Length-1];
+    tableFieldNames.Add(fieldName);
+}
+
+#endregion
+
+#region 是否有配置搜索
+
+Boolean isSearch = false;
+for(int i = 0; i < SourceTable.Columns.Count; i++)
+{
+    if((bool)ExtInfo[SourceTable.Columns[i].Name]["search"])
+    {
+        isSearch = true;
+        break;
+    }
+}
+
+#endregion
+
+#region 字典标识收集 去除重复字典标识用作js变量
+
+List<string> dicts = new List<string>();
+
+// 主表字典处理
+for(int i = 0; i < SourceTable.Columns.Count; i++)
+{
+    string fieldName = SourceTable.Columns[i].Name;
+    if((string)ExtInfo[fieldName]["dict"] != "" && (string)ExtInfo[fieldName]["dict"] != "0")
+    {
+        if((string)ExtInfo[fieldName]["display"] == "select" || (string)ExtInfo[fieldName]["display"] == "selectMultiple" || (string)ExtInfo[fieldName]["display"] == "radio" || (string)ExtInfo[fieldName]["display"] == "checkbox")
+        {
+            if(!dicts.Contains((string)ExtInfo[fieldName]["dict"]))
+            {
+                dicts.Add((string)ExtInfo[fieldName]["dict"]);
+            }
+        }
+    }
+}
+// 子表字典处理
+if(subTableName != "")
+{
+    foreach(string fieldName in subFieldNames)
+    {
+        if((string)ExtSubTableInfo[fieldName]["dict"] != "" && (string)ExtSubTableInfo[fieldName]["dict"] != "0")
+        {
+            if((string)ExtSubTableInfo[fieldName]["display"] == "select" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "radio" || (string)ExtSubTableInfo[fieldName]["display"] == "checkbox")
+        {
+            if(!dicts.Contains((string)ExtSubTableInfo[fieldName]["dict"]))
+            {
+                dicts.Add((string)ExtSubTableInfo[fieldName]["dict"]);
+            }
+        }
+        }
+    }
+}
+
+#endregion
+%>
+<template>
+  <view class="content">
+    <%-- 是否有搜索 --%>
+    <% if(isSearch) { %>
+    <!-- #ifdef APP-PLUS || H5 -->
+    <roc-navbar title="<%= SourceTable.Description %>" rightIcon="search" @rightClick="searchShow = true"></roc-navbar>
+    <!-- #endif -->
+    <!-- #ifndef APP-PLUS || H5 -->
+    <roc-navbar title="<%= SourceTable.Description %>"></roc-navbar>
+    <!-- #endif -->
+    <% } else { %>
+    <roc-navbar title="<%= SourceTable.Description %>"></roc-navbar>
+    <% } %>
+    <!-- 内容 -->
+    <view class="u-p-20">
+      <!-- 表格展示 -->
+      <uni-table stripe :loading="loading" v-show="$store.state.app.listViewType === 'table'">
+        <uni-tr>
+          <%-- 循环字段 --%>
+          <% foreach(string fieldName in tableFieldNames) { %>
+          <%-- 判断字段是否设置列表显示 --%>
+          <% if((bool)ExtInfo[fieldName]["list"]) { %>
+          <%
+              // 加单位
+              string label = (string)ExtInfo[fieldName]["label"];
+              string unit = (string)ExtInfo[fieldName]["unit"];
+              if(unit != "") {
+                  label = label + "（" + unit + "）";
+              }
+          %>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } %>
+          <% } %>
+          <%-- 是否有 子表 --%>
+          <% if(subTableName != "") { %>
+          <uni-th align="center">操作</uni-th>
+          <% } else { %>
+          <%-- 是否有 编辑 删除 功能 --%>
+          <% if((bool)ExtJson["btn_edit"] || (bool)ExtJson["btn_del"]) { %>
+          <uni-th align="center" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit', '<%= SnakeFormatHump(SourceTable.Name, true) %>.del'])">操作</uni-th>
+          <% } %>
+          <% } %>
+        </uni-tr>
+        <uni-tr v-for="row in tableList" :key="row.id">
+          <%-- 循环字段 --%>
+          <% foreach(string fieldName in tableFieldNames) { %>
+          <%-- 判断字段是否设置列表显示 --%>
+          <% if((bool)ExtInfo[fieldName]["list"]) { %>
+          <%
+              // 加单位
+              string label = (string)ExtInfo[fieldName]["label"];
+              string unit = (string)ExtInfo[fieldName]["unit"];
+              if(unit != "") {
+                  label = label + "（" + unit + "）";
+              }
+          %>
+          <%-- 判断字段对应的表单类型 --%>
+          <% if((string)ExtInfo[fieldName]["display"] == "input") { %>
+          <%-- 文本框 --%>
+          <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
+          <%-- 数字框 --%>
+          <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "textarea") { %>
+          <%-- 文本域 --%>
+          <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "select") { %>
+          <%-- 下拉框 --%>
+          <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
+          <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+          <% } else { %>
+          <uni-td align="center"><roc-dict-tag :options="dictType['<%= ExtInfo[fieldName]["dict"] %>']" :value="row.<%= fieldName %>"></roc-dict-tag></uni-td>
+          <% } %>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "selectMultiple") { %>
+          <%-- 下拉框（多选） --%>
+          <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
+          <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+          <% } else { %>
+          <uni-td align="center"><roc-dict-tag :options="dictType['<%= ExtInfo[fieldName]["dict"] %>']" :value="row.<%= fieldName %>"></roc-dict-tag></uni-td>
+          <% } %>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "radio") { %>
+          <%-- 单选框 --%>
+          <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
+          <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+          <% } else { %>
+          <uni-td align="center"><roc-dict-tag :options="dictType['<%= ExtInfo[fieldName]["dict"] %>']" :value="row.<%= fieldName %>"></roc-dict-tag></uni-td>
+          <% } %>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "checkbox") { %>
+          <%-- 复选框 --%>
+          <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
+          <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+          <% } else { %>
+          <uni-td align="center"><roc-dict-tag :options="dictType['<%= ExtInfo[fieldName]["dict"] %>']" :value="row.<%= fieldName %>"></roc-dict-tag></uni-td>
+          <% } %>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "datetime") { %>
+          <%-- 日期时间 --%>
+          <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "date") { %>
+          <%-- 日期 --%>
+          <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "imageUpload") { %>
+          <%-- 图片上传 --%>
+          <uni-td align="center">
+            <u-album
+              style="display: inline-block; margin-top: 4px;"
+              :urls="row.<%= fieldName %>"
+              :maxCount="1"
+              :singleSize="40"
+              :multipleSize="40"
+            ></u-album>
+          </uni-td>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "imageUploadMultiple") { %>
+          <%-- 图片上传（多） --%>
+          <uni-td align="center">
+            <u-album
+              style="display: inline-block; margin-top: 4px;"
+              :urls="row.<%= fieldName %>"
+              :maxCount="1"
+              :singleSize="40"
+              :multipleSize="40"
+            ></u-album>
+          </uni-td>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "0" || (string)ExtInfo[fieldName]["display"] == "") { %>
+          <%-- 为空直接展示 --%>
+          <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+          <% } %>
+          <% } %>
+          <% } %>
+          <%-- 是否有 子表 --%>
+          <% if(subTableName != "") { %>
+          <uni-td align="center" class="table-btn">
+          <% } else { %>
+          <uni-td align="center" class="table-btn" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit', '<%= SnakeFormatHump(SourceTable.Name, true) %>.del'])">
+          <% } %>
+          <%-- 是否有 编辑 删除 功能 --%>
+          <% if((bool)ExtJson["btn_edit"] || (bool)ExtJson["btn_del"]) { %>
+            <% if(subTableName != "") { %>
+            <text class="text-success" @click="handleDetail(row)">明细</text>
+            <% } %>
+            <text class="text-primary" @click="handleEdit(row)" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit'])">修改</text>
+            <text class="text-error" @click="handleDelete(row)" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.del'])">删除</text>
+          </uni-td>
+          <% } %>
+        </uni-tr>
+      </uni-table>
+      <%-- 列表展示（需要自行提取显示字段!!!） --%>
+      <!-- 列表展示（需要自行提取显示字段!!!） -->
+      <view class="roc-list" v-show="$store.state.app.listViewType == 'list'">
+        <view class="list-item u-p-20" v-for="(row, index) in tableList" :key="row.id">
+          <view class="top">
+            <view class="area1">
+              <text>{{ row.id }}</text>
+            </view>
+            <view class="area2">{{ row.id }}</view>
+          </view>
+          <view class="center">
+            <view class="area3">id：{{ row.id }}</view>
+          </view>
+          <view class="bottom">
+            <view class="area4">创建时间：{{ row.create_time }}</view>
+            <view class="area4">修改时间：{{ row.update_time }}</view>
+          </view>
+          <%-- 是否有 子表 --%>
+          <% if(subTableName != "") { %>
+          <view class="btn-box">
+          <% } else { %>
+          <view class="btn-box" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit', '<%= SnakeFormatHump(SourceTable.Name, true) %>.del'])">
+          <% } %>
+          <%-- 是否有 编辑 删除 功能 --%>
+          <% if((bool)ExtJson["btn_edit"] || (bool)ExtJson["btn_del"]) { %>
+            <% if(subTableName != "") { %>
+            <u-button type="success" size="mini" @click="handleDetail(row)">明细</u-button>
+            <% } %>
+            <u-button type="primary" size="mini" @click="handleEdit(row)" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit'])">修改</u-button>
+            <u-button type="error" size="mini" @click="handleDelete(row)" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.del'])">删除</u-button>
+          </view>
+          <% } %>
+        </view>
+      </view>
+      <!-- 分页 -->
+      <uni-pagination v-if="total > 0" class="u-m-t-20" :total="total" v-model="queryParams.page" :pageSize="queryParams.limit" @change="getList" />
+      <!-- 内容为空 -->
+      <u-empty marginTop="16vh" :show="!total" mode="data" text="暂无数据~"></u-empty>
+    </view>
+    <!-- 右下角按钮操作 -->
+    <view class="side-btn-box">
+      <%-- 是否有搜索 --%>
+      <% if(isSearch) { %>
+      <!-- #ifndef APP-PLUS || H5 -->
+      <view class="side-btn" :style="{ backgroundColor: appStyle.color.primaryRgba }" @click="searchShow = true">
+        <roc-icon-plus name="search" color="#fff" size="20"></roc-icon-plus>
+      </view>
+      <!-- #endif -->
+      <% } %>
+      <view class="side-btn" :style="{ backgroundColor: appStyle.color.primaryRgba }" @click="$store.commit('app/LIST_SWITCH_VIEW')">
+        <roc-icon-plus name="arrow-right-arrow-left" color="#fff" size="20"></roc-icon-plus>
+      </view>
+      <%-- 是否有 添加  功能 --%>
+      <% if((bool)ExtJson["btn_add"]) { %>
+      <view class="side-btn" :style="{ backgroundColor: appStyle.color.primaryRgba }" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.add'])" @click="handleAdd">
+        <roc-icon-plus name="add" color="#fff" size="22"></roc-icon-plus>
+      </view>
+      <% } %>
+    </view>
+    <!-- 回到顶部 -->
+    <u-back-top
+      :scroll-top="scrollTop"
+      :top="50"
+      :bottom="60"
+      :iconStyle="{ color: '#fff', fontSize: '20px', fontWeight: 'bold' }"
+      :customStyle="{ backgroundColor: appStyle.color.primaryRgba }"
+    ></u-back-top>
+    <!-- 模态框 -->
+    <u-modal :show="modal.show" :title="modal.title" :content="modal.content" :showCancelButton="true" @confirm="handleModalConfirm" @cancel="modal.show = false"></u-modal>
+    <% if(isSearch) { %>
+    <!-- 查询弹框 -->
+    <u-popup class="search-popup" :show="searchShow" @close="searchShow = false" mode="bottom" round="10" :closeable="true" :closeOnClickOverlay="false">
+      <view class="title">搜索</view>
+      <scroll-view class="popup-cont" scroll-y="true">
+        <view class="u-p-20">
+          <!-- 查询条件 -->
+          <u-form ref="formRef" :model="queryParams">
+            <%-- 循环字段 --%>
+            <% foreach(string fieldName in tableFieldNames) { %>
+            <%-- 判断字段是否设置搜索查询 --%>
+            <% if((bool)ExtInfo[fieldName]["search"] && (string)ExtInfo[fieldName]["query"] != "0") { %>
+            <%-- 判断字段对应的表单类型 --%>
+            <% if((string)ExtInfo[fieldName]["display"] == "input") { %>
+            <%-- 文本框 --%>
+            <u-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+              <u-input v-model="queryParams.query.<%= fieldName %>.value" placeholder="<%= ExtInfo[fieldName]["label"] %>"></u-input>
+            </u-form-item>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
+            <%-- 数字框 --%>
+            <u-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+              <u-input v-model="queryParams.query.<%= fieldName %>.value" placeholder="<%= ExtInfo[fieldName]["label"] %>" type="number"></u-input>
+            </u-form-item>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "textarea") { %>
+            <%-- 文本域 --%>
+            <u-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+              <u-textarea v-model="queryParams.query.<%= fieldName %>.value" placeholder="<%= ExtInfo[fieldName]["label"] %>"></u-textarea>
+            </u-form-item>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "select") { %>
+            <%-- 下拉框 --%>
+            <u-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+              <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
+              <zxz-uni-data-select v-model="queryParams.query.<%= fieldName %>.value" :localdata="[{value: 1, text: '请手动写入选项 或者 选择字典生成'}]" placeholder="<%= ExtInfo[fieldName]["label"] %>"></zxz-uni-data-select>
+              <% } else { %>
+              <zxz-uni-data-select v-model="queryParams.query.<%= fieldName %>.value" :localdata="dictType['<%= ExtInfo[fieldName]["dict"] %>']" placeholder="<%= ExtInfo[fieldName]["label"] %>"></zxz-uni-data-select>
+              <% } %>
+            </u-form-item>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "radio") { %>
+            <%-- 单选框 --%>
+            <u-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+              <u-radio-group v-model="queryParams.query.<%= fieldName %>.value">
+                <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
+                <u-radio label="请手动写入选项 或者 选择字典生成" name="1"></u-radio>
+                <% } else { %>
+                <u-radio v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :name="dict.value"></u-radio>
+                <% } %>
+              </u-radio-group>
+            </u-form-item>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "datetime" && (string)ExtInfo[fieldName]["query"] != "BETWEEN") { %>
+            <%-- 日期时间 非范围 --%>
+            <u-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+              <uni-datetime-picker v-model="queryParams.query.<%= fieldName %>.value" type="datetime" placeholder="<%= ExtInfo[fieldName]["label"] %>" />
+            </u-form-item>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "datetime" && (string)ExtInfo[fieldName]["query"] == "BETWEEN") { %>
+            <%-- 日期时间 范围 --%>
+            <u-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+              <uni-datetime-picker v-model="queryParams.query.<%= fieldName %>.value" type="datetimerange" placeholder="<%= ExtInfo[fieldName]["label"] %>" />
+            </u-form-item>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "date" && (string)ExtInfo[fieldName]["query"] != "BETWEEN") { %>
+            <%-- 日期 非范围 --%>
+            <u-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+              <uni-datetime-picker v-model="queryParams.query.<%= fieldName %>.value" type="date" placeholder="<%= ExtInfo[fieldName]["label"] %>" />
+            </u-form-item>
+            <% } else if((string)ExtInfo[fieldName]["display"] == "date" && (string)ExtInfo[fieldName]["query"] == "BETWEEN") { %>
+            <%-- 日期 范围 --%>
+            <u-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="query.<%= fieldName %>.value">
+              <uni-datetime-picker v-model="queryParams.query.<%= fieldName %>.value" type="daterange" placeholder="<%= ExtInfo[fieldName]["label"] %>" />
+            </u-form-item>
+            <% } %>
+            <% } %>
+            <% } %>
+          </u-form>
+        </view>
+      </scroll-view>
+      <view class="btn-box u-p-20">
+        <u-button text="重置" shape="circle" @click="resetQuery"></u-button>
+        <u-button type="primary" text="确定" shape="circle" @click="handleQuery"></u-button>
+      </view>
+    </u-popup>
+    <% } %>
+    <!-- 添加弹框 -->
+    <Add ref="addRef" @updateList="getList"></Add>
+    <!-- 编辑弹框 -->
+    <Edit ref="editRef" @updateList="getList"></Edit>
+    <% if(subTableName != "") { %>
+    <!-- 明细弹框 -->
+    <SubTable ref="subTableRef"></SubTable>
+    <% } %>
+  </view>
+</template>
+
+<script>
+import { cloneDeep } from 'lodash-es'
+import { list<%= SnakeFormatHump(SourceTable.Name, true) %>, del<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>.js'
+import dictMinxin from '@/mixins/dict.js'
+import Add from './components/add.vue'
+import Edit from './components/edit.vue'
+<% if(subTableName != "") { %>
+import SubTable from './components/subTable.vue'
+<% } %>
+
+export default {
+  mixins: [dictMinxin],
+  components: {
+    Add,
+    Edit,
+    <% if(subTableName != "") { %>
+    SubTable,
+    <% } %>
+  },
+  provide() {
+    return {
+      dictType: this.dictType,
+    }
+  },
+  data() {
+    return {
+      scrollTop: 0,
+      queryParams: {
+        page: 1,
+        limit: 10,
+        <% if(isSearch) { %>
+        query: {
+          <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+          <% string fieldName = SourceTable.Columns[i].Name; %>
+          <%-- 判断字段是否设置查询 --%>
+          <% if((bool)ExtInfo[fieldName]["search"] && (string)ExtInfo[fieldName]["query"] != "0") { %>
+          <%-- 多选 数组类型 --%>
+          <% if((string)ExtInfo[fieldName]["display"] == "selectMultiple") { %>
+          <%= fieldName %>: {
+            type: '<%= ExtInfo[fieldName]["query"] %>',
+            value: [],
+          },
+          <% } else { %>
+          <%= fieldName %>: {
+            type: '<%= ExtInfo[fieldName]["query"] %>',
+            value: null,
+          },
+          <% } %>
+          <% } %>
+          <% } %>
+        },
+        <% } else { %>
+        query: {},
+        <% } %>
+      },
+      total: 0,
+      loading: false,
+      tableList: [],
+      currentRow: {},
+      // 模态框数据
+      modal: {
+        flag: '',
+        show: false,
+        title: '',
+        content: '',
+      },
+      <% if(isSearch) { %>
+      searchShow: false,
+      <% } %>
+    }
+  },
+  onLoad() {
+    this.getDictData()
+    this.getList()
+  },
+  methods: {
+    /**
+     * 字典数据获取
+     */
+    getDictData() {
+      <% for(int i = 0; i < dicts.Count; i++) { %>
+      this.getDict('<%= dicts[i] %>')
+      <% } %>
+    },
+    /**
+     * 查询 <%= SourceTable.Description %> 列表
+     */
+    getList() {
+      this.loading = true
+      const _queryParams = cloneDeep(this.queryParams)
+      <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+      <% string fieldName = SourceTable.Columns[i].Name; %>
+      <%-- 判断字段是否设置查询 --%>
+      <% if((bool)ExtInfo[fieldName]["search"] && (string)ExtInfo[fieldName]["query"] != "0") { %>
+      <%-- 系数处理 --%>
+      <% if((string)ExtInfo[fieldName]["display"] == "input" || (string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
+      <% if((string)ExtInfo[fieldName]["rate"] != "") { %>
+      _queryParams.query.<%= fieldName %>.value = this.calc(_queryParams.query.<%= fieldName %>.value, <%= ExtInfo[fieldName]["rate"] %>, { decimal: 0, type: 'div' })
+      <% } %>
+      <% } %>
+      <% } %>
+      <% } %>
+      list<%= SnakeFormatHump(SourceTable.Name, true) %>(_queryParams).then(res => {
+        // 数据转换
+        this.tableList = res.data.rows.map(row => {
+          <%--
+              字符串 转换 数组格式 多选 & 系数处理
+          --%>
+          <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+          <% string fieldName = SourceTable.Columns[i].Name; %>
+          <%-- 字符串转换数组格式 --%>
+          <% if((string)ExtInfo[fieldName]["display"] == "checkbox" || (string)ExtInfo[fieldName]["display"] == "selectMultiple") { %>
+          <% if((string)ExtInfo[fieldName]["dict"] != "0" && (string)ExtInfo[fieldName]["dict"] != "") { %>
+          <%-- dict_type： static 静态 table 动态 rules 规则 --%>
+          <% if((string)ExtInfo[fieldName]["dict_type"] == "table") { %>
+          row.<%= fieldName %> ? (row.<%= fieldName %> = this.string2Array(row.<%= fieldName %>, ',', 'Number')) : (row.<%= fieldName %> = [])
+          <% } else { %>
+          row.<%= fieldName %> ? (row.<%= fieldName %> = this.string2Array(row.<%= fieldName %>)) : (row.<%= fieldName %> = [])
+          <% } %>
+          <% } %>
+          <% } %>
+          <%-- 系数处理 --%>
+          <% if((string)ExtInfo[fieldName]["display"] == "input" || (string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
+          <% if((string)ExtInfo[fieldName]["rate"] != "") { %>
+          row.<%= fieldName %> = this.calc(row.<%= fieldName %>, <%= ExtInfo[fieldName]["rate"] %>)
+          <% } %>
+          <% } %>
+          <%-- 额外数据处理 --%>
+          <% if((string)ExtInfo[fieldName]["display"] == "imageUpload" || (string)ExtInfo[fieldName]["display"] == "imageUploadMultiple" || (string)ExtInfo[fieldName]["display"] == "fileUpload" || (string)ExtInfo[fieldName]["display"] == "fileUploadMultiple") { %>
+          row.<%= fieldName %> ? (row.<%= fieldName %> = this.string2Array(row.<%= fieldName %>)) : (row.<%= fieldName %> = [])
+          <% } %>
+          <% } %>
+          return row
+        })
+        this.total = res.data.total
+        this.loading = false
+      })
+    },
+    /**
+     * 添加按钮操作
+     */
+    handleAdd() {
+      this.$refs['addRef'].handleOpen()
+    },
+    /**
+     * 编辑按钮操作
+     * @param {Object} row
+     */
+    handleEdit(row) {
+      const _row = cloneDeep(row)
+      this.$refs['editRef'].handleOpen(_row)
+    },
+    /**
+     * 删除按钮操作
+     * @param {Object} row
+     */
+    handleDelete(row) {
+      this.currentRow = cloneDeep(row)
+      this.modal.flag = 'delete'
+      this.modal.show = true
+      this.modal.title = '系统提示'
+      this.modal.content = '确认删除数据？'
+    },
+    /**
+     * 模态框 点击了确认
+     */
+    handleModalConfirm() {
+      if (this.modal.flag === 'delete') {
+        // 删除操作
+        const _ids = this.currentRow.<%= SourceTable.PrimaryKey.MemberColumns[0].Name %>
+        del<%= SnakeFormatHump(SourceTable.Name, true) %>({ ids: _ids }).then(() => {
+          this.$u.toast('删除成功')
+          this.modal.show = false
+          this.getList()
+        })
+      }
+    },
+    /**
+     * 搜索按钮操作
+     */
+    handleQuery() {
+      this.queryParams.page = 1
+      this.getList()
+      this.searchShow = false
+    },
+    /**
+     * 搜索重置按钮操作
+     */
+    resetQuery() {
+      this.$refs['formRef'].resetFields()
+      <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+      <% string fieldName = SourceTable.Columns[i].Name; %>
+      <%-- 判断字段是否设置查询 --%>
+      <% if((bool)ExtInfo[fieldName]["search"] && (string)ExtInfo[fieldName]["query"] != "0") { %>
+      <%-- 多选 数组类型 --%>
+      <% if((string)ExtInfo[fieldName]["display"] == "selectMultiple") { %>
+      this.queryParams.query.<%= fieldName %>.value = []
+      <% } else { %>
+      this.queryParams.query.<%= fieldName %>.value = null
+      <% } %>
+      <% } %>
+      <% } %>
+      this.handleQuery()
+    },
+    <% if(subTableName != "") { %>
+    /**
+     * 明细按钮操作
+     * @param {Object} row
+     */
+    handleDetail(row) {
+      this.$refs['subTableRef'].handleOpen(row)
+    },
+    <% } %>
+  },
+  onPageScroll(e) {
+    this.scrollTop = e.scrollTop
+  },
+  onPullDownRefresh() {
+    this.queryParams.page = 1
+    this.getDictData()
+    this.getList()
+    uni.stopPullDownRefresh()
+  },
+}
+</script>
+
+<style lang="scss" scoped>
+// 查询弹窗
+.search-popup {
+  .title {
+    text-align: center;
+    padding: 14px 0 5px 0;
+    font-size: 16px;
+  }
+  .popup-cont {
+    height: calc(60vh - 120px);
+  }
+  .btn-box {
+    display: flex;
+    .u-button {
+      width: 46%;
+    }
+  }
+}
+
+// 表格后按钮
+.table-btn {
+  text + text {
+    margin-left: 10px;
+  }
+}
+
+// 列表形式
+.roc-list {
+  $titleFontSize: 16px;
+  $contFontSize: 14px;
+  .list-item {
+    margin-top: 20px;
+    border: 1px solid #ebeef5;
+    border-radius: 5px;
+    background-color: #fff;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    &:nth-child(1) {
+      margin-top: 0;
+    }
+    .top,
+    .center,
+    .bottom {
+      display: flex;
+      justify-content: space-between;
+    }
+    .top {
+      padding-bottom: 10px;
+      .area1 {
+        font-size: $titleFontSize;
+      }
+      .area2 {
+        margin-left: 5px;
+      }
+    }
+    .center {
+      flex-wrap: wrap;
+      padding-top: 10px;
+      padding-bottom: 10px;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      .area3 {
+        display: flex;
+        width: 50%;
+        color: #333;
+        line-height: 2;
+        font-size: $contFontSize;
+      }
+    }
+    .bottom {
+      flex-wrap: wrap;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      padding: 10px 0;
+      .area4 {
+        width: 100%;
+        color: #333;
+        font-size: $contFontSize;
+        margin-bottom: 5px;
+      }
+    }
+    .btn-box {
+      display: flex;
+      justify-content: flex-end;
+      padding-top: 10px;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      .u-button {
+        width: 50px;
+        margin: 0;
+        & + .u-button {
+          margin-left: 8px;
+        }
+      }
+    }
+  }
+}
+</style>

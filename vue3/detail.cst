@@ -308,7 +308,7 @@ foreach(string fieldName in subFieldNames) {
 </template>
 
 <script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>Detail">
-import { ref, getCurrentInstance, toRefs, reactive, inject } from 'vue'
+import { ref, getCurrentInstance, inject } from 'vue'
 import { detail<%= SnakeFormatHump(SourceTable.Name, true) %><% if(subTableName != "") { %>, subDetail<%= SnakeFormatHump(SourceTable.Name, true) %><% } %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
 
 const { proxy } = getCurrentInstance()
@@ -320,23 +320,10 @@ const <%= dicts[i] %> = inject('<%= dicts[i] %>', () => [])
 <% } %>
 <% } %>
 
-/**
- * 原data 类型
- * @typedef TargetData
- * @property {Object} form
- * @property {import('@/api/faAdmin').FaAdmin | Object} form.row
- * @property {import('element-plus').FormRules<import('@/api/faAdmin').FaAdmin>} rules
- */
-
-/**@type {UnwrapNestedRefs<TargetData>} */
-const data = reactive({
-    form: {
-        row: {},
-    },
+/**@type {import('vue').Ref<{row: import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %> | Object}>} */
+const form = ref(form: {
+    row: {},
 })
-
-/**@type {ToRef<UnwrapNestedRefs<TargetData>["form"]>} */
-const form = toRefs(data).form
 
 /**@type {import('vue').Ref<Boolean>} */
 const open = ref(false)

@@ -101,7 +101,7 @@ if(subTableName != "")
         <%-- 循环字段 --%>
         <% foreach(string fieldName in tableFieldNames) { %>
             <%-- 判断字段是否设置搜索查询 --%>
-            <% if((bool)ExtInfo[fieldName]["search"]) { %>
+            <% if((bool)ExtInfo[fieldName]["search"] && (string)ExtInfo[fieldName]["query"] != "0") { %>
             <%-- 判断字段对应的表单类型 --%>
             <% if((string)ExtInfo[fieldName]["display"] == "input") { %>
             <%-- 文本框 --%>
@@ -192,7 +192,7 @@ if(subTableName != "")
         </el-row>
         <% } %>
         <!-- 表格 -->
-        <el-table v-loading="loading" :data="<%= SnakeFormatHump(SourceTable.Name) %>List" empty-text="暂无数据~" @selection-change="handleSelectionChange"<% if(subTableName != ""){ %> @expand-change="handleExpandChange"<% } %>>
+        <el-table v-loading="loading" :data="tableList" empty-text="暂无数据~" @selection-change="handleSelectionChange"<% if(subTableName != ""){ %> @expand-change="handleExpandChange"<% } %>>
             <el-table-column type="selection" width="55" align="center" />
             <%-- 子表展示 --%>
             <% if(subTableName != "") { %>
@@ -426,7 +426,7 @@ if(subTableName != "")
             <% } %>
             <%-- 是否有 编辑 删除 功能 --%>
             <% if((bool)ExtJson["btn_edit"] || (bool)ExtJson["btn_del"]) { %>
-            <el-table-column label="操作" align="center" fixed="right" class-name="small-padding fixed-width" width="236" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit', '<%= SnakeFormatHump(SourceTable.Name, true) %>.del']">
+            <el-table-column label="操作" align="center" <% if(subTableName == "") { %>fixed="right" <% } %>class-name="small-padding fixed-width" width="236" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit', '<%= SnakeFormatHump(SourceTable.Name, true) %>.del']">
                 <template #default="{ row }">
                     <% if((bool)ExtJson["btn_edit"]) { %>
                     <el-button link type="primary" @click="handleEdit(row)" v-hasPermi="['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit']" v-autoBlur>修改</el-button>
@@ -448,7 +448,7 @@ if(subTableName != "")
 </template>
 
 <script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>">
-import { ref, getCurrentInstance, reactive, toRefs, provide, watch } from 'vue'
+import { ref, getCurrentInstance, provide, watch } from 'vue'
 import { cloneDeep } from 'lodash-es'
 import { list<%= SnakeFormatHump(SourceTable.Name, true) %>, del<%= SnakeFormatHump(SourceTable.Name, true) %><% if((bool)ExtJson["btn_export"]) { %>, export<%= SnakeFormatHump(SourceTable.Name, true) %><% } %><% if(subTableName != "") { %>, subDetail<%= SnakeFormatHump(SourceTable.Name, true) %><% } %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
 <% if((bool)ExtJson["btn_export"]) { %>
@@ -486,55 +486,49 @@ provide('<%= dicts[i] %>', <%= dicts[i] %>)
 <% } %>
 
 /**
- * 原data 类型
- * @typedef TargetData
- * @property {Object} queryParams
- * @property {Number} queryParams.page
- * @property {Number} queryParams.limit
- * @property {Object} queryParams.query
+ * QueryParams 查询参数类型
+ * @typedef QueryParams
+ * @property {Number} page
+ * @property {Number} limit
+ * @property {Object} query
 <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
 <% string fieldName = SourceTable.Columns[i].Name; %>
 <%-- 判断字段是否设置查询 --%>
-<% if((bool)ExtInfo[fieldName]["search"]) { %>
- * @property {import('@/types').QueryFieldItem<<%= MysqlTypeToJsType(SourceTable.Columns[i].NativeType) %>>} queryParams.query.<%= fieldName %>
+<% if((bool)ExtInfo[fieldName]["search"] && (string)ExtInfo[fieldName]["query"] != "0") { %>
+ * @property {import('@/types').QueryFieldItem<<%= MysqlTypeToJsType(SourceTable.Columns[i].NativeType) %>>} query.<%= fieldName %>
 <% } %>
 <% } %>
  */
 
-/**@type {UnwrapNestedRefs<TargetData>} */
-const data = reactive({
-    queryParams: {
-        page: 1,
-        limit: 10,
+/**@type {import('vue').Ref<QueryParams>} */
+const queryParams = ref({
+    page: 1,
+    limit: 10,
 <% if(isSearch) { %>
-        query: {
+    query: {
 <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
 <% string fieldName = SourceTable.Columns[i].Name; %>
 <%-- 判断字段是否设置查询 --%>
-<% if((bool)ExtInfo[fieldName]["search"]) { %>
-            <%-- 多选 数组类型 --%>
-            <% if((string)ExtInfo[fieldName]["display"] == "selectMultiple") { %>
-            <%= fieldName %>: {
-                type: '<%= ExtInfo[fieldName]["query"] %>',
-                value: [],
-            },
-            <% } else { %>
-            <%= fieldName %>: {
-                type: '<%= ExtInfo[fieldName]["query"] %>',
-                value: null,
-            },
-            <% } %>
-<% } %>
-<% } %>
+<% if((bool)ExtInfo[fieldName]["search"] && (string)ExtInfo[fieldName]["query"] != "0") { %>
+        <%-- 多选 数组类型 --%>
+        <% if((string)ExtInfo[fieldName]["display"] == "selectMultiple") { %>
+        <%= fieldName %>: {
+            type: '<%= ExtInfo[fieldName]["query"] %>',
+            value: [],
         },
-<% } else { %>
-        query: {},
+        <% } else { %>
+        <%= fieldName %>: {
+            type: '<%= ExtInfo[fieldName]["query"] %>',
+            value: null,
+        },
+        <% } %>
+<% } %>
 <% } %>
     },
+<% } else { %>
+    query: {},
+<% } %>
 })
-
-/**@type {ToRef<UnwrapNestedRefs<TargetData>["queryParams"]>} */
-const queryParams = toRefs(data).queryParams
 
 /**@type {import('vue').Ref<Number>} */
 const total = ref(0)
@@ -552,7 +546,7 @@ const showSearch = ref(true)
 const ids = ref([])
 
 /**@type {import('vue').Ref<import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %>[]>} */
-const <%= SnakeFormatHump(SourceTable.Name) %>List = ref([])
+const tableList = ref([])
 
 /** 查询 <%= SourceTable.Description %> 列表 */
 async function getList() {
@@ -561,7 +555,7 @@ async function getList() {
     <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
     <% string fieldName = SourceTable.Columns[i].Name; %>
     <%-- 判断字段是否设置查询 --%>
-    <% if((bool)ExtInfo[fieldName]["search"]) { %>
+    <% if((bool)ExtInfo[fieldName]["search"] && (string)ExtInfo[fieldName]["query"] != "0") { %>
     <%-- 系数处理 --%>
     <% if((string)ExtInfo[fieldName]["display"] == "input" || (string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
     <% if((string)ExtInfo[fieldName]["rate"] != "") { %>
@@ -571,7 +565,7 @@ async function getList() {
     <% } %>
     <% } %>
     list<%= SnakeFormatHump(SourceTable.Name, true) %>(_queryParams).then((res) => {
-        <%= SnakeFormatHump(SourceTable.Name) %>List.value = res.data.rows
+        tableList.value = res.data.rows
         total.value = res.data.total
         loading.value = false
     })
@@ -587,8 +581,8 @@ function handleAdd() {
  * @param {import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %> | Event} row
  */
 function handleEdit(row) {
-    const newRow = JSON.parse(JSON.stringify(row))
-    proxy.$refs['editRef'].handleEdit(newRow)
+    const _row = cloneDeep(row)
+    proxy.$refs['editRef'].handleEdit(_row)
 }
 
 /**
@@ -598,7 +592,7 @@ function handleEdit(row) {
 function handleDelete(row) {
     const _ids = row.<%= SourceTable.PrimaryKey.MemberColumns[0].Name %> || ids.value
     proxy.$modal
-        .confirm('是否确认删除<%= ExtInfo[SourceTable.PrimaryKey.MemberColumns[0].Name]["label"] %>为"' + _ids + '"的数据项？')
+        .confirm('确认删除数据？')
         .then(function () {
             return del<%= SnakeFormatHump(SourceTable.Name, true) %>({ ids: _ids })
         })
@@ -669,21 +663,39 @@ function handleExport() {
         // 导出 表头&数据 处理
         string headerText = "";
         string fieldText = "";
+        for(int i = 0; i < tableFieldNames.Count; i++) {
+            string fieldName = tableFieldNames[i];
+            if((bool)ExtInfo[fieldName]["list"]) {
+                if((string)ExtInfo[fieldName]["display"] != "imageUpload" && (string)ExtInfo[fieldName]["display"] != "imageUploadMultiple" && (string)ExtInfo[fieldName]["display"] != "fileUpload" && (string)ExtInfo[fieldName]["display"] != "fileUploadMultiple" && (string)ExtInfo[fieldName]["display"] != "editor") {
+                    // 加单位
+                    string label = (string)ExtInfo[fieldName]["label"];
+                    string unit = (string)ExtInfo[fieldName]["unit"];
+                    if(unit != "") {
+                        label = label + "（" + unit + "）";
+                    }
+                    if(i != tableFieldNames.Count - 1){
+                        headerText += "'" + label + "', ";
+                        fieldText += "'" + fieldName + "', ";
+                    }else {
+                        headerText += "'" + label + "'";
+                        fieldText += "'" + fieldName + "'";
+                    }
+                }
+            }
+        }
+        // 多选字段
+        string fieldArgs = "";
         for(int i = 0; i < SourceTable.Columns.Count; i++) {
             string fieldName = SourceTable.Columns[i].Name;
-            if((bool)ExtInfo[fieldName]["list"]) {
-                // 加单位
-                string label = (string)ExtInfo[fieldName]["label"];
-                string unit = (string)ExtInfo[fieldName]["unit"];
-                if(unit != "") {
-                    label = label + "（" + unit + "）";
-                }
-                if(i != SourceTable.Columns.Count - 1){
-                    headerText += "'" + label + "', ";
-                    fieldText += "'" + fieldName + "', ";
-                }else {
-                    headerText += "'" + label + "'";
-                    fieldText += "'" + fieldName + "'";
+            if((bool)ExtInfo[fieldName]["list"] == true) {
+                if((string)ExtInfo[fieldName]["display"] == "checkbox" || (string)ExtInfo[fieldName]["display"] == "selectMultiple") {
+                    if((string)ExtInfo[fieldName]["dict"] != "0" && (string)ExtInfo[fieldName]["dict"] != "") {
+                        if(i != SourceTable.Columns.Count - 1){
+                            fieldArgs += "'" + fieldName + "'" + ", ";
+                        }else {
+                            fieldArgs += "'" + fieldName + "'";
+                        }
+                    }
                 }
             }
         }
@@ -694,7 +706,23 @@ function handleExport() {
         proxy.$modal
             .confirm('是否导出选中数据')
             .then(function () {
-                const data = exportFormatJson(filterVal, selectData.value<% if(dicts.Count != 0) { %>, dictKeyValue<% } %>)
+                const _selectData = cloneDeep(selectData.value)
+                // 数据处理
+                _selectData.forEach((dataItem) => {
+                <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+                <% string fieldName = SourceTable.Columns[i].Name; %>
+                <%-- 判断字段是否设置列表 --%>
+                <% if((bool)ExtInfo[fieldName]["list"]) { %>
+                    <%-- 系数处理 --%>
+                    <% if((string)ExtInfo[fieldName]["display"] == "input" || (string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
+                    <% if((string)ExtInfo[fieldName]["rate"] != "") { %>
+                    dataItem.<%= fieldName %> = proxy.calc(dataItem.<%= fieldName %>, <%= ExtInfo[fieldName]["rate"] %>)
+                    <% } %>
+                    <% } %>
+                <% } %>
+                <% } %>
+                })
+                const data = exportFormatJson(filterVal, _selectData<% if(dicts.Count != 0) { %>, dictKeyValue, [<%= fieldArgs %>]<% } %>)
                 exportJsonToExcel({ header, data, filename })
                 proxy.$modal.msgSuccess('导出成功')
                 btnExportLoading.value = false
@@ -708,7 +736,23 @@ function handleExport() {
             .then(function () {
                 export<%= SnakeFormatHump(SourceTable.Name, true) %>({ query: queryParams.value.query })
                     .then((res) => {
-                        const data = exportFormatJson(filterVal, res.data.rows<% if(dicts.Count != 0) { %>, dictKeyValue<% } %>)
+                        const _exportData = cloneDeep(res.data.rows)
+                        // 数据处理
+                        _exportData.forEach((dataItem) => {
+                        <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+                        <% string fieldName = SourceTable.Columns[i].Name; %>
+                        <%-- 判断字段是否设置列表 --%>
+                        <% if((bool)ExtInfo[fieldName]["list"]) { %>
+                            <%-- 系数处理 --%>
+                            <% if((string)ExtInfo[fieldName]["display"] == "input" || (string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
+                            <% if((string)ExtInfo[fieldName]["rate"] != "") { %>
+                            dataItem.<%= fieldName %> = proxy.calc(dataItem.<%= fieldName %>, <%= ExtInfo[fieldName]["rate"] %>)
+                            <% } %>
+                            <% } %>
+                        <% } %>
+                        <% } %>
+                        })
+                        const data = exportFormatJson(filterVal, _exportData<% if(dicts.Count != 0) { %>, dictKeyValue, [<%= fieldArgs %>]<% } %>)
                         exportJsonToExcel({ header, data, filename })
                         proxy.$modal.msgSuccess('导出成功')
                         btnExportLoading.value = false
@@ -731,6 +775,7 @@ const subTableData = ref({})
 /**
  * 展开行请求子表数据
  * @param row
+ * @param expandedRows
  */
 function handleExpandChange(row, expandedRows) {
     let isExpand = false

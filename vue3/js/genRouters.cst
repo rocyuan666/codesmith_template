@@ -4,8 +4,8 @@
 
 <%@ Property Name="Tables" Type="SchemaExplorer.TableSchemaCollection" Category="Context" Description="表集合" %>
 
-<!-- #include file="..\\common\\utils.cst" -->
-<!-- #include file="..\\common\\mapTypeTransform.cst" -->
+<!-- #include file="..\\..\\common\\utils.cst" -->
+<!-- #include file="..\\..\\common\\mapTypeTransform.cst" -->
 export const genRouters = [
     {
         path: '/baseManage',
@@ -79,7 +79,7 @@ export const genRouters = [
             icon: 'Grid',
             link: null,
             noCache: false,
-            title: '管理页面',
+            title: '业务管理',
         },
         children: [
             <% for(int i = 0; i < Tables.Count; i++) { %>

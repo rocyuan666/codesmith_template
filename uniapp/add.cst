@@ -1,0 +1,465 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Description="vue3模板" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="System.Collections.Generic" %>
+
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="所基于的表" %>
+<%@ Property Name="ExtJson" Type="JToken" Category="Context" Description="表额外数据" %>
+
+<!-- #include file="..\\common\\utils.cst" -->
+<!-- #include file="..\\common\\mapTypeTransform.cst" -->
+<%
+#region 准备子表数据
+
+// 表字段额外数据
+JToken ExtInfo = ExtJson["field"];
+// 子表名称
+string subTableName = (string)ExtJson["sub_table"];
+
+// 子表字段额外数据
+JToken ExtSubTableInfo = null;
+// 子表字段名集合
+List<string> subFieldNames = new List<string>();
+if(subTableName != "") {
+    ExtSubTableInfo = ExtJson["subTableJson"]["field"];
+    foreach(JToken x in ExtSubTableInfo) {
+        string fieldNameSub = x.Path.Split('.')[x.Path.Split('.').Length-1];
+        subFieldNames.Add(fieldNameSub);
+    }
+}
+
+#endregion
+
+#region 主表表名集合（按配置顺序排列）
+
+List<string> tableFieldNames = new List<string>();
+foreach(JToken item in ExtInfo) {
+    string fieldName = item.Path.Split('.')[item.Path.Split('.').Length-1];
+    tableFieldNames.Add(fieldName);
+}
+
+#endregion
+
+#region 添加是否有配置校验
+
+// 主表是否有配置校验
+Boolean isAddCheck = false;
+for(int i = 0; i < SourceTable.Columns.Count; i++)
+{
+    string fieldName = SourceTable.Columns[i].Name;
+    if((bool)ExtInfo[fieldName]["add"] == true)
+    {
+        if((bool)ExtInfo[fieldName]["required"] == true || (string)ExtInfo[fieldName]["rules"] == "0" || (string)ExtInfo[fieldName]["rules"] == "")
+        {
+            isAddCheck = true;
+            break;
+        }
+    }
+}
+
+// 子表是否有配置校验
+Boolean isSubTableAddCheck = false;
+foreach(string fieldName in subFieldNames) {
+    if((bool)ExtSubTableInfo[fieldName]["add"] == true)
+    {
+        if((bool)ExtSubTableInfo[fieldName]["required"] == true || (string)ExtSubTableInfo[fieldName]["rules"] == "0" || (string)ExtSubTableInfo[fieldName]["rules"] == "")
+        {
+            isSubTableAddCheck = true;
+            break;
+        }
+    }
+}
+
+#endregion
+
+#region 字典标识收集 去除重复字典标识用作js变量
+
+List<string> dicts = new List<string>();
+
+// 主表字典处理
+for(int i = 0; i < SourceTable.Columns.Count; i++)
+{
+    string fieldName = SourceTable.Columns[i].Name;
+    if((string)ExtInfo[fieldName]["dict"] != "" && (string)ExtInfo[fieldName]["dict"] != "0")
+    {
+        if((string)ExtInfo[fieldName]["display"] == "select" || (string)ExtInfo[fieldName]["display"] == "selectMultiple" || (string)ExtInfo[fieldName]["display"] == "radio" || (string)ExtInfo[fieldName]["display"] == "checkbox")
+        {
+            if(!dicts.Contains((string)ExtInfo[fieldName]["dict"]))
+            {
+                dicts.Add((string)ExtInfo[fieldName]["dict"]);
+            }
+        }
+    }
+}
+// 子表字典处理
+if(subTableName != "")
+{
+    foreach(string fieldName in subFieldNames)
+    {
+        if((string)ExtSubTableInfo[fieldName]["dict"] != "" && (string)ExtSubTableInfo[fieldName]["dict"] != "0")
+        {
+            if((string)ExtSubTableInfo[fieldName]["display"] == "select" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "radio" || (string)ExtSubTableInfo[fieldName]["display"] == "checkbox")
+        {
+            if(!dicts.Contains((string)ExtSubTableInfo[fieldName]["dict"]))
+            {
+                dicts.Add((string)ExtSubTableInfo[fieldName]["dict"]);
+            }
+        }
+        }
+    }
+}
+
+#endregion
+
+#region 子表是否需要处理数据
+bool isHandleSubTableData = false;
+foreach(string fieldName in subFieldNames) {
+    if((bool)ExtSubTableInfo[fieldName]["add"] == true) {
+        if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "imageUpload" || (string)ExtSubTableInfo[fieldName]["display"] == "imageUploadMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "fileUpload" || (string)ExtSubTableInfo[fieldName]["display"] == "fileUploadMultiple") {
+            isHandleSubTableData = true;
+            break;
+        } else if((string)ExtSubTableInfo[fieldName]["display"] == "input" || (string)ExtSubTableInfo[fieldName]["display"] == "inputNumber") {
+            if((string)ExtSubTableInfo[fieldName]["rate"] != "") {
+                isHandleSubTableData = true;
+                break;
+            }
+        }
+    }
+}
+#endregion
+%>
+<template>
+  <view class="add">
+    <u-popup :show="show" @close="handleClose" mode="center" round="10" :closeable="true" :closeOnClickOverlay="false">
+      <view class="title">添加</view>
+      <scroll-view class="popup-cont" scroll-y="true">
+        <view class="u-p-20">
+          <u-form ref="formRef" :model="form.row" :rules="rules" labelPosition="top" label-width="100%">
+            <%-- 循环字段 --%>
+            <% foreach(string fieldName in tableFieldNames) { %>
+            <%
+                // 字段是否是主键
+                Boolean isPK = SourceTable.PrimaryKey.MemberColumns[0].Name == fieldName;
+                if(isPK)
+                {
+                    continue;
+                }
+            %>
+            <%-- 判断字段是否设置添加 --%>
+            <% if((bool)ExtInfo[fieldName]["add"] == true) { %>
+            <%
+                // 单位
+                string unit = (string)ExtInfo[fieldName]["unit"];
+            %>
+            <u-form-item label="<%= ExtInfo[fieldName]["label"] %>" prop="<%= fieldName %>"<% if((bool)ExtInfo[fieldName]["required"] == true) { %> :required="true"<% } %>>
+              <%-- 判断字段对应的表单类型 --%>
+              <% if((string)ExtInfo[fieldName]["display"] == "input") { %>
+              <%-- 文本框 --%>
+              <% if(unit == "") { %>
+              <%-- 无单位 --%>
+              <u-input v-model="form.row.<%= fieldName %>" placeholder="请输入<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>" />
+              <% } else { %>
+              <%-- 有单位 --%>
+              <u-input v-model="form.row.<%= fieldName %>" placeholder="请输入<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>">
+                <template slot="suffix">
+                  <text><%= unit %></text>
+                </template>
+              </u-input>
+              <% } %>
+              <% } else if((string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
+              <%-- 数字框 --%>
+              <% if(unit == "") { %>
+              <%-- 无单位 --%>
+              <u-input v-model="form.row.<%= fieldName %>" placeholder="请输入<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>" type="number" />
+              <% } else { %>
+              <%-- 有单位 --%>
+              <u-input v-model="form.row.<%= fieldName %>" placeholder="请输入<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>" type="number">
+                <template slot="suffix">
+                  <text><%= unit %></text>
+                </template>
+              </u-input>
+              <% } %>
+              <% } else if((string)ExtInfo[fieldName]["display"] == "textarea") { %>
+              <%-- 文本域 --%>
+              <u-textarea v-model="form.row.<%= fieldName %>" placeholder="请输入<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>"></u-textarea>
+              <% } else if((string)ExtInfo[fieldName]["display"] == "select") { %>
+              <%-- 下拉框 --%>
+              <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
+              <zxz-uni-data-select v-model="form.row.<%= fieldName %>" :localdata="[{value: 1, text: '请手动写入选项 或者 选择字典生成'}]" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>"></zxz-uni-data-select>
+              <% } else { %>
+              <zxz-uni-data-select v-model="form.row.<%= fieldName %>" :localdata="dictType['<%= ExtInfo[fieldName]["dict"] %>']" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>"></zxz-uni-data-select>
+              <% } %>
+              <% } else if((string)ExtInfo[fieldName]["display"] == "selectMultiple") { %>
+              <%-- 下拉框（多选） --%>
+              <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
+              <zxz-uni-data-select v-model="form.row.<%= fieldName %>" :localdata="[{value: 1, text: '请手动写入选项 或者 选择字典生成'}]" :multiple="true" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>"></zxz-uni-data-select>
+              <% } else { %>
+              <zxz-uni-data-select v-model="form.row.<%= fieldName %>" :localdata="dictType['<%= ExtInfo[fieldName]["dict"] %>']" :multiple="true" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>"></zxz-uni-data-select>
+              <% } %>
+              <% } else if((string)ExtInfo[fieldName]["display"] == "radio") { %>
+              <%-- 单选框 --%>
+              <u-radio-group v-model="form.row.<%= fieldName %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>">
+                <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
+                <u-radio label="请手动写入选项 或者 选择字典生成" name="1"></u-radio>
+                <% } else { %>
+                <u-radio v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :name="dict.value"></u-radio>
+                <% } %>
+              </u-radio-group>
+              <% } else if((string)ExtInfo[fieldName]["display"] == "checkbox") { %>
+              <%-- 复选框 --%>
+              <u-checkbox-group v-model="form.row.<%= fieldName %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>">
+                <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
+                <u-checkbox label="请手动写入选项 或者 选择字典生成" name="1"></u-checkbox>
+                <% } else { %>
+                <u-checkbox v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :name="dict.value"></u-checkbox>
+                <% } %>
+              </u-checkbox-group>
+              <% } else if((string)ExtInfo[fieldName]["display"] == "datetime") { %>
+              <%-- 日期时间 --%>
+              <uni-datetime-picker v-model="form.row.<%= fieldName %>" type="datetime" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>" />
+              <% } else if((string)ExtInfo[fieldName]["display"] == "date") { %>
+              <%-- 日期 --%>
+              <uni-datetime-picker v-model="form.row.<%= fieldName %>" type="date" placeholder="请选择<%= ExtInfo[fieldName]["label"] %>" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>" />
+              <% } else if((string)ExtInfo[fieldName]["display"] == "imageUpload") { %>
+              <%-- 图片上传 --%>
+              <roc-upload-image v-model="form.row.<%= fieldName %>" :action="uploadApi" :header="{ token: getToken() }" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>"></roc-upload-image>
+              <% } else if((string)ExtInfo[fieldName]["display"] == "imageUploadMultiple") { %>
+              <%-- 图片上传（多） --%>
+              <roc-upload-image v-model="form.row.<%= fieldName %>" :limit="10" :action="uploadApi" :header="{ token: getToken() }" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>"></roc-upload-image>
+              <% } else if((string)ExtInfo[fieldName]["display"] == "fileUpload") { %>
+              <%-- 文件上传 --%>
+              <roc-upload-file v-model="form.row.<%= fieldName %>" :showValue="form.row.<%= fieldName %>" fileType="single" :action="uploadApi" :header="{ token: getToken() }" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>"></roc-upload-file>
+              <% } else if((string)ExtInfo[fieldName]["display"] == "fileUploadMultiple") { %>
+              <%-- 文件上传（多） --%>
+              <roc-upload-file v-model="form.row.<%= fieldName %>" :showValue="form.row.<%= fieldName %>" fileType="many" :action="uploadApi" :header="{ token: getToken() }" :disabled="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>"></roc-upload-file>
+              <% } else if((string)ExtInfo[fieldName]["display"] == "editor") { %>
+              <%-- 富文本控件 --%>
+              <roc-editor v-model="form.row.<%= fieldName %>" :html="form.row.<%= fieldName %>" :action="uploadApi" :header="{ token: getToken() }" :readOnly="<%= ExtInfo[fieldName]["add_disable"].ToString().ToLower() %>"></roc-editor>
+              <% } %>
+            </u-form-item>
+            <% } %>
+            <% } %>
+          </u-form>
+          <% if(subTableName != "") { %>
+          <AddSubTable ref="subTableRef"></AddSubTable>
+          <% } %>
+        </view>
+      </scroll-view>
+      <view class="btn-box u-p-20">
+        <u-button text="取消" shape="circle" @click="handleClose"></u-button>
+        <u-button type="primary" text="确定" shape="circle" @click="submit"></u-button>
+      </view>
+    </u-popup>
+  </view>
+</template>
+
+<script>
+import { cloneDeep } from 'lodash-es'
+import { add<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>.js'
+<% if(subTableName != "") { %>
+import AddSubTable from './addSubTable.vue'
+<% } %>
+
+export default {
+  name: 'AsphaltSaleContractAdd',
+  inject: ['dictType'],
+  <% if(subTableName != "") { %>
+  components: { AddSubTable },
+  <% } %>
+  data() {
+    return {
+      show: false,
+      form: {
+        row: {
+          <%-- 循环字段 --%>
+          <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+          <%
+              // 字段名
+              string fieldName = SourceTable.Columns[i].Name;
+              // 字段是否是主键
+              Boolean isPK = SourceTable.PrimaryKey.MemberColumns[0].Name == fieldName;
+              if(isPK)
+              {
+                  continue;
+              }
+          %>
+          <%-- 判断字段是否设置添加 --%>
+          <% if((bool)ExtInfo[fieldName]["add"] == true) { %>
+          <%-- 多选 数组类型 --%>
+          <% if((string)ExtInfo[fieldName]["display"] == "checkbox" || (string)ExtInfo[fieldName]["display"] == "selectMultiple" || (string)ExtInfo[fieldName]["display"] == "imageUpload" || (string)ExtInfo[fieldName]["display"] == "imageUploadMultiple" || (string)ExtInfo[fieldName]["display"] == "fileUpload" || (string)ExtInfo[fieldName]["display"] == "fileUploadMultiple") { %>
+          <%= fieldName %>: [],
+          <% } else { %>
+          <%= fieldName %>: null,
+          <% } %>
+          <% } %>
+          <% } %>
+        },
+      },
+      rules: {
+        <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+        <%
+          // 字段名
+          string fieldName = SourceTable.Columns[i].Name;
+          // 字段是否是主键
+          Boolean isPK = SourceTable.PrimaryKey.MemberColumns[0].Name == fieldName;
+          if(isPK)
+          {
+              continue;
+          }
+        %>
+        <% if((bool)ExtInfo[fieldName]["add"] == true) { %>
+        <%= fieldName %>: [
+          <% if((bool)ExtInfo[fieldName]["required"] == true) { %>
+          <%-- 必填验证 --%>
+          { type: 'any', required: true, message: '<%= ExtInfo[fieldName]["label"] %>不能为空', trigger: ['change', 'blur'] },
+          <% } %>
+          <% if((string)ExtInfo[fieldName]["rules"] != "" && (string)ExtInfo[fieldName]["rules"] != "0") { %>
+          <%-- 正则验证 --%>
+          <% foreach(JToken item in ExtInfo[fieldName]["rules_detail"]) { %>
+          <%
+            string message = "";
+            if((string)item["memo"] != "") {
+                message = (string)ExtInfo[fieldName]["label"] + (string)item["memo"];
+            } else {
+                message = (string)ExtInfo[fieldName]["label"] + "格式不正确";
+            }
+          %>
+          { pattern: <%= item["value"] %>, message: '<%= message %>', trigger: 'blur' },
+          <% } %>
+          <% } %>
+        ],
+        <% } %>
+        <% } %>
+      },
+    }
+  },
+  mounted() {
+    this.$refs['formRef'] && this.$refs['formRef'].setRules(this.rules)
+  },
+  methods: {
+    /**
+     * 提交表单
+     */
+    submit() {
+      this.$refs['formRef']
+        .validate()
+        .then(res => {
+          const _form = cloneDeep(this.form)
+          <%--
+              主表：多选 数组格式 转换","分割字符串 & 系数处理
+          --%>
+          <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+          <% string fieldName = SourceTable.Columns[i].Name; %>
+          <% if((bool)ExtInfo[fieldName]["add"] == true) { %>
+          <%-- 数组转字符串格式 --%>
+          <% if((string)ExtInfo[fieldName]["display"] == "checkbox" || (string)ExtInfo[fieldName]["display"] == "selectMultiple" || (string)ExtInfo[fieldName]["display"] == "imageUpload" || (string)ExtInfo[fieldName]["display"] == "imageUploadMultiple" || (string)ExtInfo[fieldName]["display"] == "fileUpload" || (string)ExtInfo[fieldName]["display"] == "fileUploadMultiple") { %>
+          _form.row.<%= fieldName %> = _form.row.<%= fieldName %>.join(',')
+          <% } %>
+          <%-- 系数处理 --%>
+          <% if((string)ExtInfo[fieldName]["display"] == "input" || (string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
+          <% if((string)ExtInfo[fieldName]["rate"] != "") { %>
+          _form.row.<%= fieldName %> = this.calc(_form.row.<%= fieldName %>, <%= ExtInfo[fieldName]["rate"] %>, { decimal: 0, type: 'div' })
+          <% } %>
+          <% } %>
+          <% } %>
+          <% } %>
+          <%--
+              子表：多选 数组格式 转换","分割字符串 & 系数处理
+          --%>
+          <% if(subTableName != "") { %>
+          const row_details = cloneDeep(this.$refs['subTableRef'].tableList)
+          <% if(isHandleSubTableData) { %>
+          _form.row['row_details'] = row_details.map(rowItem => {
+            // 子表提交数据处理
+            <% foreach(string fieldName in subFieldNames) { %>
+            <% if((bool)ExtSubTableInfo[fieldName]["add"] == true) { %>
+            <%-- 数组转字符串格式 --%>
+            <% if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "imageUpload" || (string)ExtSubTableInfo[fieldName]["display"] == "imageUploadMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "fileUpload" || (string)ExtSubTableInfo[fieldName]["display"] == "fileUploadMultiple") { %>
+            rowItem.<%= fieldName %> = rowItem.<%= fieldName %>.join(',')
+            <% } %>
+            <%-- 系数处理 --%>
+            <% if((string)ExtSubTableInfo[fieldName]["display"] == "input" || (string)ExtSubTableInfo[fieldName]["display"] == "inputNumber") { %>
+            <% if((string)ExtSubTableInfo[fieldName]["rate"] != "") { %>
+            rowItem.<%= fieldName %> = this.calc(rowItem.<%= fieldName %>, <%= ExtSubTableInfo[fieldName]["rate"] %>, { decimal: 0, type: 'div' })
+            <% } %>
+            <% } %>
+            <% } %>
+            <% } %>
+            return rowItem
+          })
+          <% } else { %>
+          _form.row['row_details'] = row_details
+          <% } %>
+          <% } %>
+          add<%= SnakeFormatHump(SourceTable.Name, true) %>(_form).then(() => {
+            this.$u.toast('新增成功')
+            this.handleClose()
+            this.$emit('updateList')
+          })
+        })
+        .catch(err => {
+          console.log('表单错误信息：', err)
+        })
+    },
+    /**
+     * 重置表单
+     */
+    reset() {
+      this.$refs['formRef'].resetFields()
+      <%-- 循环字段 --%>
+      <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+      <%
+          // 字段名
+          string fieldName = SourceTable.Columns[i].Name;
+          // 字段是否是主键
+          Boolean isPK = SourceTable.PrimaryKey.MemberColumns[0].Name == fieldName;
+          if(isPK)
+          {
+              continue;
+          }
+      %>
+      <%-- 判断字段是否设置添加 --%>
+      <% if((bool)ExtInfo[fieldName]["add"] == true) { %>
+      <%-- 多选 数组类型 --%>
+      <% if((string)ExtInfo[fieldName]["display"] == "checkbox" || (string)ExtInfo[fieldName]["display"] == "selectMultiple" || (string)ExtInfo[fieldName]["display"] == "imageUpload" || (string)ExtInfo[fieldName]["display"] == "imageUploadMultiple" || (string)ExtInfo[fieldName]["display"] == "fileUpload" || (string)ExtInfo[fieldName]["display"] == "fileUploadMultiple") { %>
+      this.form.row.<%= fieldName %> = []
+      <% } else { %>
+      this.form.row.<%= fieldName %> = null
+      <% } %>
+      <% } %>
+      <% } %>
+    },
+    /**
+     * 打开弹窗
+     */
+    handleOpen() {
+      this.show = true
+    },
+    /**
+     * 关闭弹窗
+     */
+    handleClose() {
+      this.reset()
+      this.show = false
+    },
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.title {
+  text-align: center;
+  padding: 14px 0 5px 0;
+  font-size: 16px;
+}
+.popup-cont {
+  height: calc(90vh - 120px - 88px);
+  width: 90vw;
+}
+.btn-box {
+  display: flex;
+  .u-button {
+    width: 46%;
+  }
+}
+</style>

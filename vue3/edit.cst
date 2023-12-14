@@ -352,7 +352,7 @@ foreach(string fieldName in subFieldNames) {
 </template>
 
 <script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>Edit">
-import { ref, getCurrentInstance, toRefs, reactive, inject } from 'vue'
+import { ref, getCurrentInstance, inject } from 'vue'
 import { cloneDeep } from 'lodash-es'
 import { edit<%= SnakeFormatHump(SourceTable.Name, true) %><% if(subTableName != "") { %>, subDetail<%= SnakeFormatHump(SourceTable.Name, true) %><% } %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
 
@@ -365,66 +365,48 @@ const <%= dicts[i] %> = inject('<%= dicts[i] %>', () => [])
 <% } %>
 <% } %>
 
-/**
- * 原data 类型
- * @typedef TargetData
- * @property {Object} form
- * @property {import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %> | Object} form.row
- * @property {import('element-plus').FormRules<import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %>>} rules
- */
-
-/**@type {UnwrapNestedRefs<TargetData>} */
-const data = reactive({
-    form: {
-        row: {},
-    },
-<% if(isEditCheck) { %>
-    rules: {
-        <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
-        <%
-            // 字段名
-            string fieldName = SourceTable.Columns[i].Name;
-            // 字段是否是主键
-            Boolean isPK = SourceTable.PrimaryKey.MemberColumns[0].Name == fieldName;
-            if(isPK)
-            {
-                continue;
-            }
-        %>
-        <% if((bool)ExtInfo[fieldName]["edit"] == true) { %>
-        <%= fieldName %>: [
-            <% if((bool)ExtInfo[fieldName]["required"] == true) { %>
-            <%-- 必填验证 --%>
-            { required: true, message: '<%= ExtInfo[fieldName]["label"] %>不能为空', trigger: 'blur' },
-            <% } %>
-            <% if((string)ExtInfo[fieldName]["rules"] != "" && (string)ExtInfo[fieldName]["rules"] != "0") { %>
-            <%-- 正则验证 --%>
-            <% foreach(JToken item in ExtInfo[fieldName]["rules_detail"]) { %>
-            <%
-                string message = "";
-                if((string)item["memo"] != "") {
-                    message = (string)ExtInfo[fieldName]["label"] + (string)item["memo"];
-                } else {
-                    message = (string)ExtInfo[fieldName]["label"] + "格式不正确";
-                }
-            %>
-            { pattern: <%= item["value"] %>, message: '<%= message %>', trigger: 'blur' },
-            <% } %>
-            <% } %>
-        ],
-        <% } %>
-        <% } %>
-    },
-<% } else { %>
-    rules: {},
-<% } %>
+/**@type {import('vue').Ref<{row: import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %> | Object}>} */
+const form = ref({
+    row: {},
 })
 
-/**@type {ToRef<UnwrapNestedRefs<TargetData>["form"]>} */
-const form = toRefs(data).form
-
-/**@type {ToRef<UnwrapNestedRefs<TargetData>["rules"]>} */
-const rules = toRefs(data).rules
+/**@type {import('vue').Ref<import('element-plus').FormRules<import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %>>>} */
+const rules = ref({
+    <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+    <%
+        // 字段名
+        string fieldName = SourceTable.Columns[i].Name;
+        // 字段是否是主键
+        Boolean isPK = SourceTable.PrimaryKey.MemberColumns[0].Name == fieldName;
+        if(isPK)
+        {
+            continue;
+        }
+    %>
+    <% if((bool)ExtInfo[fieldName]["edit"] == true) { %>
+    <%= fieldName %>: [
+        <% if((bool)ExtInfo[fieldName]["required"] == true) { %>
+        <%-- 必填验证 --%>
+        { required: true, message: '<%= ExtInfo[fieldName]["label"] %>不能为空', trigger: 'blur' },
+        <% } %>
+        <% if((string)ExtInfo[fieldName]["rules"] != "" && (string)ExtInfo[fieldName]["rules"] != "0") { %>
+        <%-- 正则验证 --%>
+        <% foreach(JToken item in ExtInfo[fieldName]["rules_detail"]) { %>
+        <%
+            string message = "";
+            if((string)item["memo"] != "") {
+                message = (string)ExtInfo[fieldName]["label"] + (string)item["memo"];
+            } else {
+                message = (string)ExtInfo[fieldName]["label"] + "格式不正确";
+            }
+        %>
+        { pattern: <%= item["value"] %>, message: '<%= message %>', trigger: 'blur' },
+        <% } %>
+        <% } %>
+    ],
+    <% } %>
+    <% } %>
+})
 
 /**@type {import('vue').Ref<Boolean>} */
 const open = ref(false)
@@ -433,19 +415,19 @@ const open = ref(false)
 const title = ref('')
 
 /**@type {EmitFn<string[]>} */
-const emits = defineEmits(['updateList'])
+const emit = defineEmits(['updateList'])
 
 /** 提交按钮 */
 function submitForm() {
     proxy.$refs['<%= SnakeFormatHump(SourceTable.Name) %>Ref'].validate((valid) => {
         if (valid) {
-            const newFormValue = cloneDeep(form.value)
+            const _form = cloneDeep(form.value)
             <% if(subTableName != "") { %>
             <%--
                 子表：多选 数组格式 转换","分割字符串 & 系数处理
             --%>
             <% if(isHandleSubTableData) { %>
-            newFormValue.row.row_details.forEach((rowItem) => {
+            _form.row.row_details.forEach((rowItem) => {
                 <% foreach(string fieldName in subFieldNames) { %>
                 <% if((bool)ExtSubTableInfo[fieldName]["edit"] == true) { %>
                 <%-- 数组转为字符串 --%>
@@ -464,7 +446,7 @@ function submitForm() {
             <% } %>
             <%-- 子表验证 --%>
             <% if(isSubTableEditCheck) { %>
-            if (!checkSubTableForm(newFormValue.row.row_details)) return
+            if (!checkSubTableForm(_form.row.row_details)) return
             <% } %>
             <% } %>
             <%--
@@ -475,20 +457,20 @@ function submitForm() {
             <% if((bool)ExtInfo[fieldName]["edit"] == true) { %>
             <%-- 数组转换字符串 --%>
             <% if((string)ExtInfo[fieldName]["display"] == "checkbox" || (string)ExtInfo[fieldName]["display"] == "selectMultiple") { %>
-            newFormValue.row.<%= fieldName %> = newFormValue.row.<%= fieldName %>.join(',')
+            _form.row.<%= fieldName %> = _form.row.<%= fieldName %>.join(',')
             <% } %>
             <%-- 系数处理 --%>
             <% if((string)ExtInfo[fieldName]["display"] == "input" || (string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
             <% if((string)ExtInfo[fieldName]["rate"] != "") { %>
-            newFormValue.row.<%= fieldName %> = proxy.calc(newFormValue.row.<%= fieldName %>, <%= ExtInfo[fieldName]["rate"] %>, { decimal: 0, type: 'div' })
+            _form.row.<%= fieldName %> = proxy.calc(_form.row.<%= fieldName %>, <%= ExtInfo[fieldName]["rate"] %>, { decimal: 0, type: 'div' })
             <% } %>
             <% } %>
             <% } %>
             <% } %>
-            edit<%= SnakeFormatHump(SourceTable.Name, true) %>(newFormValue).then(() => {
+            edit<%= SnakeFormatHump(SourceTable.Name, true) %>(_form).then(() => {
                 proxy.$modal.msgSuccess('修改成功')
                 open.value = false
-                emits('updateList')
+                emit('updateList')
             })
         }
     })

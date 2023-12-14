@@ -51,7 +51,7 @@ CodeTemplate uniappApiTemplate = GetCodeTemplate("\\uniapp\\js\\api.cst");
 // uniapp - 列表
 CodeTemplate uniappIndexTemplate = GetCodeTemplate("\\uniapp\\index.cst");
 
-// uniapp - 子表
+// uniapp - 子表列表
 CodeTemplate uniappSubTableTemplate = GetCodeTemplate("\\uniapp\\subTable.cst");
 
 // uniapp - 添加
@@ -60,6 +60,11 @@ CodeTemplate uniappAddTemplate = GetCodeTemplate("\\uniapp\\add.cst");
 // uniapp - 编辑
 CodeTemplate uniappEditTemplate = GetCodeTemplate("\\uniapp\\edit.cst");
 
+// uniapp - 子表添加
+CodeTemplate uniappAddSubTableTemplate = GetCodeTemplate("\\uniapp\\addSubTable.cst");
+
+// uniapp - 子表编辑
+CodeTemplate uniappEditSubTableTemplate = GetCodeTemplate("\\uniapp\\editSubTable.cst");
 
 #endregion
 
@@ -110,12 +115,6 @@ for(int i = 0; i < Tables.Count; i++)
     string uniappIndexDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\" + SnakeFormatHump(Tables[i].Name) + "\\" + SnakeFormatHump(Tables[i].Name) + ".vue";
     RenderFileUsingProperties(uniappIndexDirectory, true, ref uniappIndexTemplate, Tables[i], extTableJson);
     
-    // uniapp - 子表
-    if(subTableName != "") {
-        string uniappSubTableDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\subTable.vue";
-        RenderFileUsingProperties(uniappSubTableDirectory, true, ref uniappSubTableTemplate, Tables[i], extTableJson);
-    }
-    
     // uniapp - 添加
     string uniappAddDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\add.vue";
     RenderFileUsingProperties(uniappAddDirectory, true, ref uniappAddTemplate, Tables[i], extTableJson);
@@ -123,6 +122,22 @@ for(int i = 0; i < Tables.Count; i++)
     // uniapp - 编辑
     string uniappEditDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\edit.vue";
     RenderFileUsingProperties(uniappEditDirectory, true, ref uniappEditTemplate, Tables[i], extTableJson);
+    
+    // uniapp - 子表
+    if(subTableName != "") {
+        // 列表
+        string uniappSubTableDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\subTable.vue";
+        RenderFileUsingProperties(uniappSubTableDirectory, true, ref uniappSubTableTemplate, Tables[i], extTableJson);
+      
+        // 添加
+        string uniappAddSubTableDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\addSubTable.vue";
+        RenderFileUsingProperties(uniappAddSubTableDirectory, true, ref uniappAddSubTableTemplate, Tables[i], extTableJson);
+      
+        // 编辑
+        string uniappEditSubTableDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\editSubTable.vue";
+        RenderFileUsingProperties(uniappEditSubTableDirectory, true, ref uniappEditSubTableTemplate, Tables[i], extTableJson);
+    }
+    
 }
 
 #endregion

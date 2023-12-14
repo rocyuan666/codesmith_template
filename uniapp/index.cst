@@ -98,13 +98,13 @@ if(subTableName != "")
     <%-- 是否有搜索 --%>
     <% if(isSearch) { %>
     <!-- #ifdef APP-PLUS || H5 -->
-    <roc-navbar title="<%= SourceTable.Description %>" rightIcon="search" @rightClick="searchShow = true"></roc-navbar>
+    <roc-navbar :title="pageTitle" rightIcon="search" @rightClick="searchShow = true"></roc-navbar>
     <!-- #endif -->
     <!-- #ifndef APP-PLUS || H5 -->
-    <roc-navbar title="<%= SourceTable.Description %>"></roc-navbar>
+    <roc-navbar :title="pageTitle"></roc-navbar>
     <!-- #endif -->
     <% } else { %>
-    <roc-navbar title="<%= SourceTable.Description %>"></roc-navbar>
+    <roc-navbar :title="pageTitle"></roc-navbar>
     <% } %>
     <!-- 内容 -->
     <view class="u-p-20">
@@ -314,7 +314,7 @@ if(subTableName != "")
       <scroll-view class="popup-cont" scroll-y="true">
         <view class="u-p-20">
           <!-- 查询条件 -->
-          <u-form ref="formRef" :model="queryParams">
+          <u-form ref="formRef" :model="queryParams" labelPosition="top" label-width="100%">
             <%-- 循环字段 --%>
             <% foreach(string fieldName in tableFieldNames) { %>
             <%-- 判断字段是否设置搜索查询 --%>
@@ -424,6 +424,7 @@ export default {
   },
   data() {
     return {
+      pageTitle: '<%= SourceTable.Description %>',
       scrollTop: 0,
       queryParams: {
         page: 1,
@@ -469,7 +470,8 @@ export default {
       <% } %>
     }
   },
-  onLoad() {
+  onLoad(options) {
+    if (options.pageTitle) this.pageTitle = options.pageTitle
     this.getDictData()
     this.getList()
   },
@@ -633,7 +635,7 @@ export default {
     font-size: 16px;
   }
   .popup-cont {
-    height: calc(60vh - 120px);
+    height: calc(80vh - 120px);
   }
   .btn-box {
     display: flex;

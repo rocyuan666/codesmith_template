@@ -40,15 +40,33 @@ foreach(JToken item in ExtInfo) {
 
 #endregion
 
-#region 是否有配置搜索
+#region 编辑是否有配置校验
 
-Boolean isSearch = false;
+// 主表是否有配置校验
+Boolean isEditCheck = false;
 for(int i = 0; i < SourceTable.Columns.Count; i++)
 {
-    if((bool)ExtInfo[SourceTable.Columns[i].Name]["search"])
+    string fieldName = SourceTable.Columns[i].Name;
+    if((bool)ExtInfo[fieldName]["edit"] == true)
     {
-        isSearch = true;
-        break;
+        if((bool)ExtInfo[fieldName]["required"] == true || (string)ExtInfo[fieldName]["rules"] == "0" || (string)ExtInfo[fieldName]["rules"] == "")
+        {
+            isEditCheck = true;
+            break;
+        }
+    }
+}
+
+// 子表是否有配置校验
+Boolean isSubTableEditCheck = false;
+foreach(string fieldName in subFieldNames) {
+    if((bool)ExtSubTableInfo[fieldName]["edit"] == true)
+    {
+        if((bool)ExtSubTableInfo[fieldName]["required"] == true || (string)ExtSubTableInfo[fieldName]["rules"] == "0" || (string)ExtSubTableInfo[fieldName]["rules"] == "")
+        {
+            isSubTableEditCheck = true;
+            break;
+        }
     }
 }
 
@@ -92,12 +110,483 @@ if(subTableName != "")
 }
 
 #endregion
+
+#region 子表是否需要处理数据
+bool isHandleSubTableData = false;
+foreach(string fieldName in subFieldNames) {
+    if((bool)ExtSubTableInfo[fieldName]["edit"] == true) {
+        if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple") {
+            isHandleSubTableData = true;
+            break;
+        } else if((string)ExtSubTableInfo[fieldName]["display"] == "input" || (string)ExtSubTableInfo[fieldName]["display"] == "inputNumber") {
+            if((string)ExtSubTableInfo[fieldName]["rate"] != "") {
+                isHandleSubTableData = true;
+                break;
+            }
+        }
+    }
+}
+#endregion
 %>
 <template>
+  <view class="edit-sub-table">
+    <!-- 子表编辑部分 -->
+    <view class="sub-table-edit-btn-box">
+      <view>明细</view>
+      <view><u-button type="primary" @click="handleAdd">添加</u-button></view>
+    </view>
+    <uni-table emptyText="暂无数据~">
+      <!-- 表头行 -->
+      <uni-tr>
+        <%-- 循环字段 --%>
+        <% foreach(string fieldName in subFieldNames) { %>
+        <%-- 判断字段是否设置修改 --%>
+        <% if((bool)ExtSubTableInfo[fieldName]["edit"] == true) { %>
+        <%
+            // 加单位
+            string subTableLabel = (string)ExtSubTableInfo[fieldName]["label"];
+            string subTableUnit = (string)ExtSubTableInfo[fieldName]["unit"];
+            if(subTableUnit != "") {
+                subTableLabel = subTableLabel + "（" + subTableUnit + "）";
+            }
+        %>
+        <uni-th align="center"><%= subTableLabel %></uni-th>
+        <% } %>
+        <% } %>
+        <uni-th align="center">操作</uni-th>
+      </uni-tr>
+      <!-- 表格数据行 -->
+      <uni-tr v-for="(row, rowIndex) in tableList" :key="rowIndex">
+        <%-- 循环字段 --%>
+        <% foreach(string fieldName in subFieldNames) { %>
+        <%-- 判断字段是否设置修改 --%>
+        <% if((bool)ExtSubTableInfo[fieldName]["edit"]) { %>
+        <%-- 判断字段对应的表单类型 --%>
+        <% if((string)ExtSubTableInfo[fieldName]["display"] == "input") { %>
+        <%-- 文本框 --%>
+        <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "inputNumber") { %>
+        <%-- 数字框 --%>
+        <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "textarea") { %>
+        <%-- 文本域 --%>
+        <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "select") { %>
+        <%-- 下拉框 --%>
+        <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+        <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+        <% } else { %>
+        <uni-td align="center"><roc-dict-tag :options="dictType['<%= ExtSubTableInfo[fieldName]["dict"] %>']" :value="row.<%= fieldName %>"></roc-dict-tag></uni-td>
+        <% } %>
+        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple") { %>
+        <%-- 下拉框（多选） --%>
+        <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+        <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+        <% } else { %>
+        <uni-td align="center"><roc-dict-tag :options="dictType['<%= ExtSubTableInfo[fieldName]["dict"] %>']" :value="row.<%= fieldName %>"></roc-dict-tag></uni-td>
+        <% } %>
+        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "radio") { %>
+        <%-- 单选框 --%>
+        <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+        <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+        <% } else { %>
+        <uni-td align="center"><roc-dict-tag :options="dictType['<%= ExtSubTableInfo[fieldName]["dict"] %>']" :value="row.<%= fieldName %>"></roc-dict-tag></uni-td>
+        <% } %>
+        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox") { %>
+        <%-- 复选框 --%>
+        <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+        <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+        <% } else { %>
+        <uni-td align="center"><roc-dict-tag :options="dictType['<%= ExtSubTableInfo[fieldName]["dict"] %>']" :value="row.<%= fieldName %>"></roc-dict-tag></uni-td>
+        <% } %>
+        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "datetime") { %>
+        <%-- 日期时间 --%>
+        <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "date") { %>
+        <%-- 日期 --%>
+        <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "imageUpload") { %>
+        <%-- 图片上传 --%>
+        <uni-td align="center">
+          <u-album
+            style="display: inline-block; margin-top: 4px;"
+            :urls="row.<%= fieldName %>"
+            :maxCount="1"
+            :singleSize="40"
+            :multipleSize="40"
+          ></u-album>
+        </uni-td>
+        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "imageUploadMultiple") { %>
+        <%-- 图片上传（多） --%>
+        <uni-td align="center">
+          <u-album
+            style="display: inline-block; margin-top: 4px;"
+            :urls="row.<%= fieldName %>"
+            :maxCount="1"
+            :singleSize="40"
+            :multipleSize="40"
+          ></u-album>
+        </uni-td>
+        <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "0" || (string)ExtSubTableInfo[fieldName]["display"] == "") { %>
+        <%-- 为空直接展示 --%>
+        <uni-td align="center">{{ row.<%= fieldName %> }}</uni-td>
+        <% } %>
+        <% } %>
+        <% } %>
+        <uni-td align="center" class="table-btn">
+          <text class="text-primary" @click="handleEdit(rowIndex, row)">修改</text>
+          <text class="text-error" @click="handleDelete(rowIndex)">删除</text>
+        </uni-td>
+      </uni-tr>
+    </uni-table>
+    <!-- 子表修改表单 -->
+    <u-popup :show="show" @close="handleClose" mode="center" round="10" :closeable="true" :closeOnClickOverlay="false">
+      <view class="title">{{ title }}</view>
+      <scroll-view class="popup-cont" scroll-y="true">
+        <view class="u-p-20">
+          <u-form ref="formRef" :model="form" :rules="rules" labelPosition="top" label-width="100%">
+            <%-- 循环字段 --%>
+            <% foreach(string fieldName in subFieldNames) { %>
+            <%-- 判断字段是否设置修改 --%>
+            <% if((bool)ExtSubTableInfo[fieldName]["edit"] == true) { %>
+            <%
+                // 单位
+                string unit = (string)ExtSubTableInfo[fieldName]["unit"];
+            %>
+            <u-form-item label="<%= ExtSubTableInfo[fieldName]["label"] %>" prop="<%= fieldName %>"<% if((bool)ExtSubTableInfo[fieldName]["required"] == true) { %> :required="true"<% } %>>
+              <%-- 判断字段对应的表单类型 --%>
+              <% if((string)ExtSubTableInfo[fieldName]["display"] == "input") { %>
+              <%-- 文本框 --%>
+              <% if(unit == "") { %>
+              <%-- 无单位 --%>
+              <u-input v-model="form.<%= fieldName %>" placeholder="请输入<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>" />
+              <% } else { %>
+              <%-- 有单位 --%>
+              <u-input v-model="form.<%= fieldName %>" placeholder="请输入<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>">
+                <template slot="suffix">
+                  <text><%= unit %></text>
+                </template>
+              </u-input>
+              <% } %>
+              <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "inputNumber") { %>
+              <%-- 数字框 --%>
+              <% if(unit == "") { %>
+              <%-- 无单位 --%>
+              <u-input v-model="form.<%= fieldName %>" placeholder="请输入<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>" type="number" />
+              <% } else { %>
+              <%-- 有单位 --%>
+              <u-input v-model="form.<%= fieldName %>" placeholder="请输入<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>" type="number">
+                <template slot="suffix">
+                  <text><%= unit %></text>
+                </template>
+              </u-input>
+              <% } %>
+              <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "textarea") { %>
+              <%-- 文本域 --%>
+              <u-textarea v-model="form.<%= fieldName %>" placeholder="请输入<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>"></u-textarea>
+              <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "select") { %>
+              <%-- 下拉框 --%>
+              <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+              <zxz-uni-data-select v-model="form.<%= fieldName %>" :localdata="[{value: 1, text: '请手动写入选项 或者 选择字典生成'}]" placeholder="请选择<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>"></zxz-uni-data-select>
+              <% } else { %>
+              <zxz-uni-data-select v-model="form.<%= fieldName %>" :localdata="dictType['<%= ExtSubTableInfo[fieldName]["dict"] %>']" placeholder="请选择<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>"></zxz-uni-data-select>
+              <% } %>
+              <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple") { %>
+              <%-- 下拉框（多选） --%>
+              <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+              <zxz-uni-data-select v-model="form.<%= fieldName %>" :localdata="[{value: 1, text: '请手动写入选项 或者 选择字典生成'}]" :multiple="true" placeholder="请选择<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>"></zxz-uni-data-select>
+              <% } else { %>
+              <zxz-uni-data-select v-model="form.<%= fieldName %>" :localdata="dictType['<%= ExtSubTableInfo[fieldName]["dict"] %>']" :multiple="true" placeholder="请选择<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>"></zxz-uni-data-select>
+              <% } %>
+              <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "radio") { %>
+              <%-- 单选框 --%>
+              <u-radio-group v-model="form.<%= fieldName %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>">
+                <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+                <u-radio label="请手动写入选项 或者 选择字典生成" name="1"></u-radio>
+                <% } else { %>
+                <u-radio v-for="dict in <%= ExtSubTableInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :name="dict.value"></u-radio>
+                <% } %>
+              </u-radio-group>
+              <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox") { %>
+              <%-- 复选框 --%>
+              <u-checkbox-group v-model="form.<%= fieldName %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>">
+                <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+                <u-checkbox label="请手动写入选项 或者 选择字典生成" name="1"></u-checkbox>
+                <% } else { %>
+                <u-checkbox v-for="dict in <%= ExtSubTableInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :name="dict.value"></u-checkbox>
+                <% } %>
+              </u-checkbox-group>
+              <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "datetime") { %>
+              <%-- 日期时间 --%>
+              <uni-datetime-picker v-model="form.<%= fieldName %>" type="datetime" placeholder="请选择<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>" />
+              <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "date") { %>
+              <%-- 日期 --%>
+              <uni-datetime-picker v-model="form.<%= fieldName %>" type="date" placeholder="请选择<%= ExtSubTableInfo[fieldName]["label"] %>" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>" />
+              <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "imageUpload") { %>
+              <%-- 图片上传 --%>
+              <roc-upload-image v-model="form.<%= fieldName %>" :action="uploadApi" :header="{ token: getToken() }" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>"></roc-upload-image>
+              <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "imageUploadMultiple") { %>
+              <%-- 图片上传（多） --%>
+              <roc-upload-image v-model="form.<%= fieldName %>" :limit="10" :action="uploadApi" :header="{ token: getToken() }" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>"></roc-upload-image>
+              <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "fileUpload") { %>
+              <%-- 文件上传 --%>
+              <roc-upload-file v-model="form.<%= fieldName %>" :showValue="form.<%= fieldName %>" fileType="single" :action="uploadApi" :header="{ token: getToken() }" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>"></roc-upload-file>
+              <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "fileUploadMultiple") { %>
+              <%-- 文件上传（多） --%>
+              <roc-upload-file v-model="form.<%= fieldName %>" :showValue="form.<%= fieldName %>" fileType="many" :action="uploadApi" :header="{ token: getToken() }" :disabled="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>"></roc-upload-file>
+              <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "editor") { %>
+              <%-- 富文本控件 --%>
+              <roc-editor v-model="form.<%= fieldName %>" :html="form.<%= fieldName %>" :action="uploadApi" :header="{ token: getToken() }" :readOnly="<%= ExtSubTableInfo[fieldName]["edit_disable"].ToString().ToLower() %>"></roc-editor>
+              <% } %>
+            </u-form-item>
+            <% } %>
+            <% } %>
+          </u-form>
+        </view>
+      </scroll-view>
+      <view class="btn-box u-p-20">
+        <u-button text="取消" shape="circle" @click="handleClose"></u-button>
+        <u-button type="primary" text="确定" shape="circle" @click="submit"></u-button>
+      </view>
+    </u-popup>
+    <!-- 模态框 -->
+    <u-modal :show="modal.show" :title="modal.title" :content="modal.content" :showCancelButton="true" @confirm="handleModalConfirm" @cancel="modal.show = false"></u-modal>
+  </view>
 </template>
 
 <script>
+import { cloneDeep } from 'lodash-es'
+import { subDetail<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>.js'
+
+export default {
+  name: '<%= SnakeFormatHump(SourceTable.Name, true) %>EditSubTable',
+  inject: ['dictType'],
+  props: {
+    rowId: {
+      type: Number,
+      required: true,
+    },
+  },
+  data() {
+    return {
+      title: '',
+      show: false,
+      tableList: [],
+      editRowIndex: -1,
+      delRowIndex: -1,
+      form: {
+        <% foreach(string fieldName in subFieldNames) { %>
+        <%-- 判断字段是否设置修改 --%>
+        <% if((bool)ExtSubTableInfo[fieldName]["edit"] == true) { %>
+        <%-- 多选 数组类型 --%>
+        <% if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "imageUpload" || (string)ExtSubTableInfo[fieldName]["display"] == "imageUploadMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "fileUpload" || (string)ExtSubTableInfo[fieldName]["display"] == "fileUploadMultiple") { %>
+        <%= fieldName %>: [],
+        <% } else { %>
+        <%= fieldName %>: null,
+        <% } %>
+        <% } %>
+        <% } %>
+      },
+      rules: {
+        <% foreach(string fieldName in subFieldNames) { %>
+        <% if((bool)ExtSubTableInfo[fieldName]["edit"] == true) { %>
+        <%= fieldName %>: [
+          <% if((bool)ExtSubTableInfo[fieldName]["required"] == true) { %>
+          <%-- 必填验证 --%>
+          { type: 'any', required: true, message: '<%= ExtSubTableInfo[fieldName]["label"] %>不能为空', trigger: ['change', 'blur'] },
+          <% } %>
+          <% if((string)ExtSubTableInfo[fieldName]["rules"] != "" && (string)ExtSubTableInfo[fieldName]["rules"] != "0") { %>
+          <%-- 正则验证 --%>
+          <% foreach(JToken item in ExtSubTableInfo[fieldName]["rules_detail"]) { %>
+          <%
+            string message = "";
+            if((string)item["memo"] != "") {
+                message = (string)ExtSubTableInfo[fieldName]["label"] + (string)item["memo"];
+            } else {
+                message = (string)ExtSubTableInfo[fieldName]["label"] + "格式不正确";
+            }
+          %>
+          { pattern: <%= item["value"] %>, message: '<%= message %>', trigger: ['change', 'blur'] },
+          <% } %>
+          <% } %>
+        ],
+        <% } %>
+        <% } %>
+      },
+      // 模态框数据
+      modal: {
+        flag: '',
+        show: false,
+        title: '',
+        content: '',
+      },
+    }
+  },
+  created() {
+    this.getList(this.rowId)
+  },
+  mounted() {
+    this.$refs['formRef'] && this.$refs['formRef'].setRules(this.rules)
+  },
+  methods: {
+    /**
+     * 获取子表数据
+     * @param {Number} id
+     */
+    getList(id) {
+      subDetail<%= SnakeFormatHump(SourceTable.Name, true) %>({ id }).then(res => {
+        this.tableList = res.data
+        this.tableList.forEach(row => {
+          <%--
+              字符串 转换 数组格式 多选 & 系数处理
+          --%>
+          <% foreach(string fieldName in subFieldNames) { %>
+          <%-- 字符串转换数组格式 --%>
+          <% if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple") { %>
+          <% if((string)ExtSubTableInfo[fieldName]["dict"] != "0" && (string)ExtSubTableInfo[fieldName]["dict"] != "") { %>
+          <%-- dict_type： static 静态 table 动态 rules 规则 --%>
+          <% if((string)ExtSubTableInfo[fieldName]["dict_type"] == "table") { %>
+          row.<%= fieldName %> ? (row.<%= fieldName %> = this.string2Array(row.<%= fieldName %>, ',', 'Number')) : (row.<%= fieldName %> = [])
+          <% } else { %>
+          row.<%= fieldName %> ? (row.<%= fieldName %> = this.string2Array(row.<%= fieldName %>)) : (row.<%= fieldName %> = [])
+          <% } %>
+          <% } %>
+          <% } %>
+          <%-- 系数处理 --%>
+          <% if((string)ExtSubTableInfo[fieldName]["display"] == "input" || (string)ExtSubTableInfo[fieldName]["display"] == "inputNumber") { %>
+          <% if((string)ExtSubTableInfo[fieldName]["rate"] != "") { %>
+          row.<%= fieldName %> = this.calc(row.<%= fieldName %>, <%= ExtSubTableInfo[fieldName]["rate"] %>)
+          <% } %>
+          <% } %>
+          <%-- 额外数据处理 --%>
+          <% if((string)ExtSubTableInfo[fieldName]["display"] == "imageUpload" || (string)ExtSubTableInfo[fieldName]["display"] == "imageUploadMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "fileUpload" || (string)ExtSubTableInfo[fieldName]["display"] == "fileUploadMultiple") { %>
+          row.<%= fieldName %> ? (row.<%= fieldName %> = this.string2Array(row.<%= fieldName %>)) : (row.<%= fieldName %> = [])
+          <% } %>
+          <% } %>
+        })
+      })
+    },
+    /**
+     * 添加操作
+     */
+    handleAdd() {
+      this.show = true
+      this.title = '添加明细'
+      this.editRowIndex = -1
+    },
+    /**
+     * 编辑操作
+     * @param {Number} index
+     */
+    handleEdit(index, row) {
+      const _row = cloneDeep(row)
+      this.show = true
+      this.title = '修改明细'
+      this.editRowIndex = index
+      this.form = _row
+    },
+    /**
+     * 删除操作
+     * @param {Number} index
+     */
+    handleDelete(index) {
+      this.delRowIndex = index
+      this.modal.flag = 'delete'
+      this.modal.title = '系统提示'
+      this.modal.content = '确认删除数据？'
+      this.modal.show = true
+    },
+    /**
+     * 模态框 点击了确认
+     */
+    handleModalConfirm() {
+      if (this.modal.flag === 'delete') {
+        // 删除操作
+        this.tableList.splice(this.delRowIndex, 1)
+        this.modal.show = false
+      }
+    },
+    /**
+     * 提交表单
+     */
+    submit() {
+      this.$refs['formRef']
+        .validate()
+        .then(res => {
+          const _form = cloneDeep(this.form)
+          if (this.editRowIndex === -1) {
+            // 添加
+            this.tableList.push(_form)
+          } else {
+            // 修改
+            this.tableList.splice(this.editRowIndex, 1, _form)
+          }
+          this.handleClose()
+        })
+        .catch(err => {
+          console.log('表单错误信息：', err)
+        })
+    },
+    /**
+     * 重置表单
+     */
+    reset() {
+      this.$refs['formRef'].resetFields()
+      <% foreach(string fieldName in subFieldNames) { %>
+      <%-- 判断字段是否设置修改 --%>
+      <% if((bool)ExtSubTableInfo[fieldName]["edit"] == true) { %>
+      <%-- 多选 数组类型 --%>
+      <% if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "imageUpload" || (string)ExtSubTableInfo[fieldName]["display"] == "imageUploadMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "fileUpload" || (string)ExtSubTableInfo[fieldName]["display"] == "fileUploadMultiple") { %>
+      this.form.<%= fieldName %> = []
+      <% } else { %>
+      this.form.<%= fieldName %> = null
+      <% } %>
+      <% } %>
+      <% } %>
+    },
+    /**
+     * 关闭弹窗
+     */
+    handleClose() {
+      this.reset()
+      this.show = false
+    },
+  },
+}
 </script>
 
 <style lang="scss" scoped>
+.edit-sub-table {
+  margin-top: 10px;
+  .sub-table-edit-btn-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    .u-button {
+      height: 30px;
+    }
+  }
+}
+.title {
+  text-align: center;
+  padding: 14px 0 5px 0;
+  font-size: 16px;
+}
+.popup-cont {
+  height: calc(90vh - 120px - 88px);
+  width: 90vw;
+}
+.btn-box {
+  display: flex;
+  .u-button {
+    width: 46%;
+  }
+}
+// 表格后按钮
+.table-btn {
+  text + text {
+    margin-left: 10px;
+  }
+}
 </style>

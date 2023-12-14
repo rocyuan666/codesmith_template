@@ -261,7 +261,7 @@ import EditSubTable from './editSubTable.vue'
 <% } %>
 
 export default {
-  name: 'AsphaltSaleContractEdit',
+  name: '<%= SnakeFormatHump(SourceTable.Name, true) %>Edit',
   inject: ['dictType'],
   <% if(subTableName != "") { %>
   components: { EditSubTable },
@@ -325,7 +325,7 @@ export default {
                 message = (string)ExtInfo[fieldName]["label"] + "格式不正确";
             }
           %>
-          { pattern: <%= item["value"] %>, message: '<%= message %>', trigger: 'blur' },
+          { pattern: <%= item["value"] %>, message: '<%= message %>', trigger: ['change', 'blur'] },
           <% } %>
           <% } %>
         ],

@@ -120,7 +120,7 @@ if(subTableName != "")
               string label = (string)ExtInfo[fieldName]["label"];
               string unit = (string)ExtInfo[fieldName]["unit"];
               if(unit != "") {
-                  label = label + "（" + unit + "）";
+                  label = label + "(" + unit + ")";
               }
           %>
           <uni-th align="center"><%= label %></uni-th>
@@ -146,7 +146,7 @@ if(subTableName != "")
               string label = (string)ExtInfo[fieldName]["label"];
               string unit = (string)ExtInfo[fieldName]["unit"];
               if(unit != "") {
-                  label = label + "（" + unit + "）";
+                  label = label + "(" + unit + ")";
               }
           %>
           <%-- 判断字段对应的表单类型 --%>

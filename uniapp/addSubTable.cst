@@ -147,7 +147,7 @@ foreach(string fieldName in subFieldNames) {
             string subTableLabel = (string)ExtSubTableInfo[fieldName]["label"];
             string subTableUnit = (string)ExtSubTableInfo[fieldName]["unit"];
             if(subTableUnit != "") {
-                subTableLabel = subTableLabel + "（" + subTableUnit + "）";
+                subTableLabel = subTableLabel + "(" + subTableUnit + ")";
             }
         %>
         <uni-th align="center"><%= subTableLabel %></uni-th>

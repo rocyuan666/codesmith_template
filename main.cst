@@ -21,10 +21,16 @@ JObject json = JObject.Parse(File.ReadAllText(JsonFile));
 #region 路由生成 !!!暂时
 
 // vue3 - 路由 模板获取
-CodeTemplate jsRoutersTemplate = GetCodeTemplate("\\vue3\\js\\genRouters.cst");
+CodeTemplate vue3RoutersTemplate = GetCodeTemplate("\\vue3\\js\\genRouters.cst");
 // vue3 - 路由 指定输出目录 & 渲染解析模版
-string jsRoutersDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue3\\router\\genRouters.js";
-RenderFileUsingProperties(jsRoutersDirectory, true, ref jsRoutersTemplate, Tables);
+string vue3RoutersDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue3\\router\\genRouters.js";
+RenderFileUsingProperties(vue3RoutersDirectory, true, ref vue3RoutersTemplate, Tables);
+
+// uniapp - 页面 模板获取
+CodeTemplate uniappPagesTemplate = GetCodeTemplate("\\uniapp\\js\\pages.cst");
+// uniapp - 页面 指定输出目录 & 渲染解析模版
+string uniappPagesDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages.js";
+RenderFileUsingProperties(uniappPagesDirectory, true, ref uniappPagesTemplate, Tables);
 
 #endregion
 

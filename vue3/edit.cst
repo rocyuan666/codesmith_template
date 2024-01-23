@@ -345,7 +345,7 @@ foreach(string fieldName in subFieldNames) {
         <template #footer>
             <div class="dialog-footer">
                 <el-button @click="cancel" v-autoBlur>取 消</el-button>
-                <el-button type="primary" @click="submitForm" v-autoBlur>确 定</el-button>
+                <el-button type="primary" :disabled="submitDisabled" @click="submitForm" v-autoBlur>确 定</el-button>
             </div>
         </template>
     </el-dialog>
@@ -355,22 +355,38 @@ foreach(string fieldName in subFieldNames) {
 import { ref, getCurrentInstance, inject } from 'vue'
 import { cloneDeep } from 'lodash-es'
 import { edit<%= SnakeFormatHump(SourceTable.Name, true) %><% if(subTableName != "") { %>, subDetail<%= SnakeFormatHump(SourceTable.Name, true) %><% } %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
-
-const { proxy } = getCurrentInstance()
 <% if(dicts.Count != 0) { %>
-
-// 注入字典数据
-<% for(int i = 0; i < dicts.Count; i++) { %>
-const <%= dicts[i] %> = inject('<%= dicts[i] %>', () => [])
+import { useHandleDict } from './js/useHandleDict.js'
 <% } %>
+<%
+// 字典 js变量 js方法参数 处理
+string dictsDot = "";
+string dictsArgs = "";
+for(int i = 0; i < dicts.Count; i++)
+{
+    if(i != dicts.Count - 1){
+        dictsDot += dicts[i] + ", ";
+        dictsArgs += "'" + dicts[i] + "'" + ", ";
+    } else {
+        dictsDot += dicts[i];
+        dictsArgs += "'" + dicts[i] + "'";
+    }
+}
+%>
+
+/** @type {import('vue').ComponentInternalInstance} */
+const instance = getCurrentInstance()
+const proxy = instance.proxy
+<% if(dicts.Count != 0) { %>
+const { getDictData, <%= dictsDot %> } = useHandleDict()
 <% } %>
 
-/**@type {import('vue').Ref<{row: import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %> | Object}>} */
+/** @type {import('vue').Ref<{row: import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %> | Object}>} */
 const form = ref({
     row: {},
 })
 
-/**@type {import('vue').Ref<import('element-plus').FormRules<import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %>>>} */
+/** @type {import('vue').Ref<import('element-plus').FormRules<import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %>>>} */
 const rules = ref({
     <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
     <%
@@ -408,19 +424,21 @@ const rules = ref({
     <% } %>
 })
 
-/**@type {import('vue').Ref<Boolean>} */
+/** @type {import('vue').Ref<Boolean>} */
 const open = ref(false)
 
-/**@type {import('vue').Ref<String>} */
+/** @type {import('vue').Ref<String>} */
 const title = ref('')
 
-/**@type {EmitFn<string[]>} */
+/** @type {EmitFn<string[]>} */
 const emit = defineEmits(['updateList'])
 
+const submitDisabled = ref(false)
 /** 提交按钮 */
-function submitForm() {
+const submitForm = proxy.debounce(function () {
     proxy.$refs['<%= SnakeFormatHump(SourceTable.Name) %>Ref'].validate((valid) => {
         if (valid) {
+            submitDisabled.value = true
             const _form = cloneDeep(form.value)
             <% if(subTableName != "") { %>
             <%--
@@ -446,7 +464,10 @@ function submitForm() {
             <% } %>
             <%-- 子表验证 --%>
             <% if(isSubTableEditCheck) { %>
-            if (!checkSubTableForm(_form.row.row_details)) return
+            if (!checkSubTableForm(_form.row.row_details)) {
+                submitDisabled.value = false
+                return
+            }
             <% } %>
             <% } %>
             <%--
@@ -467,14 +488,19 @@ function submitForm() {
             <% } %>
             <% } %>
             <% } %>
-            edit<%= SnakeFormatHump(SourceTable.Name, true) %>(_form).then(() => {
-                proxy.$modal.msgSuccess('修改成功')
-                open.value = false
-                emit('updateList')
-            })
+            edit<%= SnakeFormatHump(SourceTable.Name, true) %>(_form)
+                .then(() => {
+                    proxy.$modal.msgSuccess('修改成功')
+                    open.value = false
+                    submitDisabled.value = false
+                    emit('updateList')
+                })
+                .catch(() => {
+                    submitDisabled.value = false
+                })
         }
     })
-}
+})
 
 /** 取消按钮 */
 function cancel() {
@@ -502,6 +528,9 @@ function reset() {
         <%-- 多选 数组类型 --%>
         <% if((string)ExtInfo[fieldName]["display"] == "checkbox" || (string)ExtInfo[fieldName]["display"] == "selectMultiple") { %>
         <%= fieldName %>: [],
+        <%-- 数字类型 --%>
+        <% } else if((string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
+        <%= fieldName %>: 0,
         <% } else { %>
         <%= fieldName %>: null,
         <% } %>
@@ -520,6 +549,9 @@ function reset() {
  */
 function handleEdit(row) {
     reset()
+    <% if(dicts.Count != 0) { %>
+    getDictData()
+    <% } %>
     <% if(subTableName != "") { %>
     getSubTableDetail(row.id)
     <% } %>
@@ -562,6 +594,9 @@ const formSubTable = {
     <%-- 多选 数组类型 --%>
     <% if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple") { %>
     <%= fieldName %>: [],
+    <%-- 数字类型 --%>
+    <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "inputNumber") { %>
+    <%= fieldName %>: 0,
     <% } else { %>
     <%= fieldName %>: null,
     <% } %>

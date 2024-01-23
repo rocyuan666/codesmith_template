@@ -1,0 +1,113 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Description="vue3模板" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="System.Collections.Generic" %>
+
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="所基于的表" %>
+<%@ Property Name="ExtJson" Type="JToken" Category="Context" Description="表额外数据" %>
+
+<!-- #include file="..\\..\\common\\utils.cst" -->
+<!-- #include file="..\\..\\common\\mapTypeTransform.cst" -->
+<%
+#region 准备子表数据
+
+// 表字段额外数据
+JToken ExtInfo = ExtJson["field"];
+// 子表名称
+string subTableName = (string)ExtJson["sub_table"];
+
+// 子表字段额外数据
+JToken ExtSubTableInfo = null;
+// 子表字段名集合
+List<string> subFieldNames = new List<string>();
+if(subTableName != "") {
+    ExtSubTableInfo = ExtJson["subTableJson"]["field"];
+    foreach(JToken x in ExtSubTableInfo) {
+        string fieldNameSub = x.Path.Split('.')[x.Path.Split('.').Length-1];
+        subFieldNames.Add(fieldNameSub);
+    }
+}
+
+#endregion
+
+#region 主表表名集合（按配置顺序排列）
+
+List<string> tableFieldNames = new List<string>();
+foreach(JToken item in ExtInfo) {
+    string fieldName = item.Path.Split('.')[item.Path.Split('.').Length-1];
+    tableFieldNames.Add(fieldName);
+}
+
+#endregion
+
+#region 字典标识收集 去除重复字典标识用作js变量
+
+List<string> dicts = new List<string>();
+
+// 主表字典处理
+for(int i = 0; i < SourceTable.Columns.Count; i++)
+{
+    string fieldName = SourceTable.Columns[i].Name;
+    if((string)ExtInfo[fieldName]["dict"] != "" && (string)ExtInfo[fieldName]["dict"] != "0")
+    {
+        if((string)ExtInfo[fieldName]["display"] == "select" || (string)ExtInfo[fieldName]["display"] == "selectMultiple" || (string)ExtInfo[fieldName]["display"] == "radio" || (string)ExtInfo[fieldName]["display"] == "checkbox")
+        {
+            if(!dicts.Contains((string)ExtInfo[fieldName]["dict"]))
+            {
+                dicts.Add((string)ExtInfo[fieldName]["dict"]);
+            }
+        }
+    }
+}
+// 子表字典处理
+if(subTableName != "")
+{
+    foreach(string fieldName in subFieldNames)
+    {
+        if((string)ExtSubTableInfo[fieldName]["dict"] != "" && (string)ExtSubTableInfo[fieldName]["dict"] != "0")
+        {
+            if((string)ExtSubTableInfo[fieldName]["display"] == "select" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "radio" || (string)ExtSubTableInfo[fieldName]["display"] == "checkbox")
+        {
+            if(!dicts.Contains((string)ExtSubTableInfo[fieldName]["dict"]))
+            {
+                dicts.Add((string)ExtSubTableInfo[fieldName]["dict"]);
+            }
+        }
+        }
+    }
+}
+
+#endregion
+%>
+import { ref } from 'vue'
+import { getDicts } from '@/api/dict.js'
+import { handleResData } from '@/utils/dict.js'
+
+/**
+ * 字典下拉数据
+ */
+export function useHandleDict() {
+    <% for(int i = 0; i < dicts.Count; i++) { %>
+    const <%= dicts[i] %> = ref([])
+    <% } %>
+
+    /**
+     * 请求字典数据
+     */
+    function getDictData() {
+        <% for(int i = 0; i < dicts.Count; i++) { %>
+        getDicts({ label: '<%= dicts[i] %>' }).then((res) => {
+            <%= dicts[i] %>.value = res.data.map((dict) => {
+                return handleResData(dict)
+            })
+        })
+        <% } %>
+    }
+    
+    return {
+        getDictData,
+        <% for(int i = 0; i < dicts.Count; i++) { %>
+        <%= dicts[i] %>,
+        <% } %>
+    }
+}

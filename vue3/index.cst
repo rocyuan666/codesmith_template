@@ -457,8 +457,9 @@ import { labelValueToKeyValue, exportFormatJson } from '@/utils/roc'
 <% } %>
 import Add from './add.vue'
 import Edit from './edit.vue'
-
-const { proxy } = getCurrentInstance()
+<% if(dicts.Count != 0) { %>
+import { useHandleDict } from './js/useHandleDict.js'
+<% } %>
 <%
 // 字典 js变量 js方法参数 处理
 string dictsDot = "";
@@ -468,21 +469,18 @@ for(int i = 0; i < dicts.Count; i++)
     if(i != dicts.Count - 1){
         dictsDot += dicts[i] + ", ";
         dictsArgs += "'" + dicts[i] + "'" + ", ";
-    }else {
+    } else {
         dictsDot += dicts[i];
         dictsArgs += "'" + dicts[i] + "'";
     }
 }
 %>
-<% if(dictsDot != "") { %>
-const { <%= dictsDot %> } = proxy.useDict(<%= dictsArgs %>)
-<% } %>
-<% if(dicts.Count != 0) { %>
 
-// 注入字典数据
-<% for(int i = 0; i < dicts.Count; i++) { %>
-provide('<%= dicts[i] %>', <%= dicts[i] %>)
-<% } %>
+/** @type {import('vue').ComponentInternalInstance} */
+const instance = getCurrentInstance()
+const proxy = instance.proxy
+<% if(dicts.Count != 0) { %>
+const { getDictData, <%= dictsDot %> } = useHandleDict()
 <% } %>
 
 /**
@@ -500,7 +498,7 @@ provide('<%= dicts[i] %>', <%= dicts[i] %>)
 <% } %>
  */
 
-/**@type {import('vue').Ref<QueryParams>} */
+/** @type {import('vue').Ref<QueryParams>} */
 const queryParams = ref({
     page: 1,
     limit: 10,
@@ -530,27 +528,30 @@ const queryParams = ref({
 <% } %>
 })
 
-/**@type {import('vue').Ref<Number>} */
+/** @type {import('vue').Ref<Number>} */
 const total = ref(0)
 
-/**@type {import('vue').Ref<Boolean>} */
+/** @type {import('vue').Ref<Boolean>} */
 const loading = ref(false)
 
-/**@type {import('vue').Ref<Boolean>} */
+/** @type {import('vue').Ref<Boolean>} */
 const multiple = ref(true)
 
-/**@type {import('vue').Ref<Boolean>} */
+/** @type {import('vue').Ref<Boolean>} */
 const showSearch = ref(true)
 
-/**@type {import('vue').Ref<Number[] | String[]>} */
+/** @type {import('vue').Ref<Number[] | String[]>} */
 const ids = ref([])
 
-/**@type {import('vue').Ref<import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %>[]>} */
+/** @type {import('vue').Ref<import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %>[]>} */
 const tableList = ref([])
 
 /** 查询 <%= SourceTable.Description %> 列表 */
 async function getList() {
     loading.value = true
+    <% if(dicts.Count != 0) { %>
+    getDictData()
+    <% } %>
     const _queryParams = cloneDeep(queryParams.value)
     <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
     <% string fieldName = SourceTable.Columns[i].Name; %>
@@ -564,11 +565,14 @@ async function getList() {
     <% } %>
     <% } %>
     <% } %>
-    list<%= SnakeFormatHump(SourceTable.Name, true) %>(_queryParams).then((res) => {
-        tableList.value = res.data.rows
-        total.value = res.data.total
-        loading.value = false
-    })
+    list<%= SnakeFormatHump(SourceTable.Name, true) %>(_queryParams)
+        .then((res) => {
+            tableList.value = res.data.rows
+            total.value = res.data.total
+            loading.value = false
+        }).catch(() => {
+            loading.value = false
+        })
 }
 
 /** 新增按钮操作 */
@@ -655,9 +659,11 @@ watch([<%= dictsDot %>], ([<%= dictsDot %>]) => {
 })
 
 <% } %>
-/** 导出按钮操作 */
-function handleExport() {
-    btnExportLoading.value = true
+/**
+ * 数据处理导出
+ * @param exportData
+ */
+function handleDataExport(exportData) {
     const filename = '<%= SourceTable.Description %>'
     <%
         // 导出 表头&数据 处理
@@ -691,9 +697,9 @@ function handleExport() {
                 if((string)ExtInfo[fieldName]["display"] == "checkbox" || (string)ExtInfo[fieldName]["display"] == "selectMultiple") {
                     if((string)ExtInfo[fieldName]["dict"] != "0" && (string)ExtInfo[fieldName]["dict"] != "") {
                         if(i != SourceTable.Columns.Count - 1){
-                            fieldArgs += "'" + fieldName + "'" + ", ";
+                            fieldArgs += "{ field: '" + fieldName + "'}" + ", ";
                         }else {
-                            fieldArgs += "'" + fieldName + "'";
+                            fieldArgs += "{ field: '" + fieldName + "'}";
                         }
                     }
                 }
@@ -702,29 +708,34 @@ function handleExport() {
     %>
     const header = [<%= headerText %>]
     const filterVal = [<%= fieldText %>]
+    const _exportData = cloneDeep(exportData)
+    _exportData.forEach((dataItem) => {
+    <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
+    <% string fieldName = SourceTable.Columns[i].Name; %>
+    <%-- 判断字段是否设置列表 --%>
+    <% if((bool)ExtInfo[fieldName]["list"]) { %>
+        <%-- 系数处理 --%>
+        <% if((string)ExtInfo[fieldName]["display"] == "input" || (string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
+        <% if((string)ExtInfo[fieldName]["rate"] != "") { %>
+        dataItem.<%= fieldName %> = proxy.calc(dataItem.<%= fieldName %>, <%= ExtInfo[fieldName]["rate"] %>)
+        <% } %>
+        <% } %>
+    <% } %>
+    <% } %>
+    })
+    const data = exportFormatJson(filterVal, _exportData<% if(dicts.Count != 0) { %>, dictKeyValue, [<%= fieldArgs %>]<% } %>)
+    exportJsonToExcel({ header, data, filename })
+    proxy.$modal.msgSuccess('导出成功')
+}
+
+/** 导出按钮操作 */
+function handleExport() {
+    btnExportLoading.value = true
     if (selectData.value.length) {
         proxy.$modal
             .confirm('是否导出选中数据')
             .then(function () {
-                const _selectData = cloneDeep(selectData.value)
-                // 数据处理
-                _selectData.forEach((dataItem) => {
-                <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
-                <% string fieldName = SourceTable.Columns[i].Name; %>
-                <%-- 判断字段是否设置列表 --%>
-                <% if((bool)ExtInfo[fieldName]["list"]) { %>
-                    <%-- 系数处理 --%>
-                    <% if((string)ExtInfo[fieldName]["display"] == "input" || (string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
-                    <% if((string)ExtInfo[fieldName]["rate"] != "") { %>
-                    dataItem.<%= fieldName %> = proxy.calc(dataItem.<%= fieldName %>, <%= ExtInfo[fieldName]["rate"] %>)
-                    <% } %>
-                    <% } %>
-                <% } %>
-                <% } %>
-                })
-                const data = exportFormatJson(filterVal, _selectData<% if(dicts.Count != 0) { %>, dictKeyValue, [<%= fieldArgs %>]<% } %>)
-                exportJsonToExcel({ header, data, filename })
-                proxy.$modal.msgSuccess('导出成功')
+                handleDataExport(selectData.value)
                 btnExportLoading.value = false
             })
             .catch(() => {
@@ -736,25 +747,7 @@ function handleExport() {
             .then(function () {
                 export<%= SnakeFormatHump(SourceTable.Name, true) %>({ query: queryParams.value.query })
                     .then((res) => {
-                        const _exportData = cloneDeep(res.data.rows)
-                        // 数据处理
-                        _exportData.forEach((dataItem) => {
-                        <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
-                        <% string fieldName = SourceTable.Columns[i].Name; %>
-                        <%-- 判断字段是否设置列表 --%>
-                        <% if((bool)ExtInfo[fieldName]["list"]) { %>
-                            <%-- 系数处理 --%>
-                            <% if((string)ExtInfo[fieldName]["display"] == "input" || (string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
-                            <% if((string)ExtInfo[fieldName]["rate"] != "") { %>
-                            dataItem.<%= fieldName %> = proxy.calc(dataItem.<%= fieldName %>, <%= ExtInfo[fieldName]["rate"] %>)
-                            <% } %>
-                            <% } %>
-                        <% } %>
-                        <% } %>
-                        })
-                        const data = exportFormatJson(filterVal, _exportData<% if(dicts.Count != 0) { %>, dictKeyValue, [<%= fieldArgs %>]<% } %>)
-                        exportJsonToExcel({ header, data, filename })
-                        proxy.$modal.msgSuccess('导出成功')
+                        handleDataExport(res.data.rows)
                         btnExportLoading.value = false
                     })
                     .catch(() => {
@@ -769,7 +762,7 @@ function handleExport() {
 <% } %>
 <% if(subTableName != "") { %>
 
-/**@type {import('vue').Ref<Object[]>} */
+/** @type {import('vue').Ref<Object[]>} */
 const subTableData = ref({})
 
 /**

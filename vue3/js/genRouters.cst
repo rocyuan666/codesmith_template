@@ -26,7 +26,7 @@ export const genRouters = [
                 path: 'user',
                 name: 'User',
                 hidden: false,
-                component: () => import('@/views/user'),
+                component: () => import('@/views/user/index.vue'),
                 meta: {
                     icon: '',
                     link: null,
@@ -39,7 +39,7 @@ export const genRouters = [
                 path: 'role',
                 name: 'Role',
                 hidden: false,
-                component: () => import('@/views/role'),
+                component: () => import('@/views/role/index.vue'),
                 permissions: ['Role.list'],
                 meta: {
                     icon: '',
@@ -52,7 +52,7 @@ export const genRouters = [
                 path: 'userPermission',
                 name: 'UserPermission',
                 hidden: false,
-                component: () => import('@/views/permission'),
+                component: () => import('@/views/permission/index.vue'),
                 permissions: ['RolePermission.permissionList'],
                 meta: {
                     icon: '',
@@ -87,7 +87,7 @@ export const genRouters = [
                 path: '<%= SnakeFormatHump(Tables[i].Name) %>',
                 name: '<%= SnakeFormatHump(Tables[i].Name, true) %>',
                 hidden: false,
-                component: () => import('@/views/<%= SnakeFormatHump(Tables[i].Name) %>'),
+                component: () => import('@/views/<%= SnakeFormatHump(Tables[i].Name) %>/index.vue'),
                 permissions: ['<%= SnakeFormatHump(Tables[i].Name, true) %>.list'],
                 meta: {
                     icon: '',

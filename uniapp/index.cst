@@ -224,17 +224,21 @@ if(subTableName != "")
           <%-- 是否有 子表 --%>
           <% if(subTableName != "") { %>
           <uni-td align="center" class="table-btn">
+            <text class="text-success" @click="handleDetail(row)">明细</text>
+            <%-- 是否有 编辑 删除 功能 --%>
+            <% if((bool)ExtJson["btn_edit"] || (bool)ExtJson["btn_del"]) { %>
+            <text class="text-primary" @click="handleEdit(row)" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit'])">修改</text>
+            <text class="text-error" @click="handleDelete(row)" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.del'])">删除</text>
+            <% } %>
+          </uni-td>
           <% } else { %>
-          <uni-td align="center" class="table-btn" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit', '<%= SnakeFormatHump(SourceTable.Name, true) %>.del'])">
-          <% } %>
           <%-- 是否有 编辑 删除 功能 --%>
           <% if((bool)ExtJson["btn_edit"] || (bool)ExtJson["btn_del"]) { %>
-            <% if(subTableName != "") { %>
-            <text class="text-success" @click="handleDetail(row)">明细</text>
-            <% } %>
+          <uni-td align="center" class="table-btn" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit', '<%= SnakeFormatHump(SourceTable.Name, true) %>.del'])">
             <text class="text-primary" @click="handleEdit(row)" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit'])">修改</text>
             <text class="text-error" @click="handleDelete(row)" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.del'])">删除</text>
           </uni-td>
+          <% } %>
           <% } %>
         </uni-tr>
       </uni-table>
@@ -258,17 +262,21 @@ if(subTableName != "")
           <%-- 是否有 子表 --%>
           <% if(subTableName != "") { %>
           <view class="btn-box">
+            <u-button type="success" size="mini" @click="handleDetail(row)">明细</u-button>
+            <%-- 是否有 编辑 删除 功能 --%>
+            <% if((bool)ExtJson["btn_edit"] || (bool)ExtJson["btn_del"]) { %>
+            <u-button type="primary" size="mini" @click="handleEdit(row)" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit'])">修改</u-button>
+            <u-button type="error" size="mini" @click="handleDelete(row)" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.del'])">删除</u-button>
+            <% } %>
+          </view>
           <% } else { %>
-          <view class="btn-box" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit', '<%= SnakeFormatHump(SourceTable.Name, true) %>.del'])">
-          <% } %>
           <%-- 是否有 编辑 删除 功能 --%>
           <% if((bool)ExtJson["btn_edit"] || (bool)ExtJson["btn_del"]) { %>
-            <% if(subTableName != "") { %>
-            <u-button type="success" size="mini" @click="handleDetail(row)">明细</u-button>
-            <% } %>
+          <view class="btn-box" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit', '<%= SnakeFormatHump(SourceTable.Name, true) %>.del'])">
             <u-button type="primary" size="mini" @click="handleEdit(row)" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.edit'])">修改</u-button>
             <u-button type="error" size="mini" @click="handleDelete(row)" v-if="hasPermi(['<%= SnakeFormatHump(SourceTable.Name, true) %>.del'])">删除</u-button>
           </view>
+          <% } %>
           <% } %>
         </view>
       </view>
@@ -351,7 +359,7 @@ if(subTableName != "")
                 <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
                 <u-radio label="请手动写入选项 或者 选择字典生成" name="1"></u-radio>
                 <% } else { %>
-                <u-radio v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :name="dict.value"></u-radio>
+                <u-radio v-for="dict in dictType['<%= ExtInfo[fieldName]["dict"] %>']" :key="dict.value" :label="dict.label" :name="dict.value"></u-radio>
                 <% } %>
               </u-radio-group>
             </u-form-item>
@@ -416,11 +424,6 @@ export default {
     <% if(subTableName != "") { %>
     SubTable,
     <% } %>
-  },
-  provide() {
-    return {
-      dictType: this.dictType,
-    }
   },
   data() {
     return {

@@ -39,6 +39,9 @@ RenderFileUsingProperties(uniappPagesDirectory, true, ref uniappPagesTemplate, T
 // vue3 - api
 CodeTemplate vue3ApiTemplate = GetCodeTemplate("\\vue3\\js\\api.cst");
 
+// vue3 - dicts字典数据处理
+CodeTemplate vue3DictsTemplate = GetCodeTemplate("\\vue3\\js\\useHandleDict.cst");
+
 // vue3 - 列表
 CodeTemplate vue3IndexTemplate = GetCodeTemplate("\\vue3\\index.cst");
 
@@ -96,6 +99,10 @@ for(int i = 0; i < Tables.Count; i++)
     // vue3 - api
     string vue3ApiDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue3\\api\\" + SnakeFormatHump(Tables[i].Name) + ".js";
     RenderFileUsingProperties(vue3ApiDirectory, true, ref vue3ApiTemplate, Tables[i], extTableJson);
+    
+    // vue3 - dicts字典数据处理
+    string vue3DictsDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue3\\views\\" + SnakeFormatHump(Tables[i].Name) + "\\js\\useHandleDict.js";
+    RenderFileUsingProperties(vue3DictsDirectory, true, ref vue3DictsTemplate, Tables[i], extTableJson);
     
     // vue3 - 列表
     string vue3IndexDirectory = OutputDirectory + "\\" + RootNameSpace + "\\vue3\\views\\" + SnakeFormatHump(Tables[i].Name) + "\\index.vue";

@@ -208,11 +208,12 @@ if(subTableName != "")
 
 <script>
 import { cloneDeep } from 'lodash-es'
+import dictMinxin from '@/mixins/dict.js'
 import { subDetail<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>.js'
 
 export default {
   name: '<%= SnakeFormatHump(SourceTable.Name, true) %>SubTable',
-  inject: ['dictType'],
+  mixins: [dictMinxin],
   data() {
     return {
       show: false,
@@ -222,6 +223,14 @@ export default {
     }
   },
   methods: {
+    /**
+     * 字典数据获取
+     */
+    getDictData() {
+      <% for(int i = 0; i < dicts.Count; i++) { %>
+      this.getDict('<%= dicts[i] %>')
+      <% } %>
+    },
     /**
      * 获取子表数据
      * @param {Number} id
@@ -266,6 +275,7 @@ export default {
      */
     handleOpen(row) {
       this.rowData = row
+      this.getDictData()
       this.getList(this.rowData.id)
       this.show = true
     },

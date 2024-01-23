@@ -310,25 +310,41 @@ foreach(string fieldName in subFieldNames) {
 <script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>Detail">
 import { ref, getCurrentInstance, inject } from 'vue'
 import { detail<%= SnakeFormatHump(SourceTable.Name, true) %><% if(subTableName != "") { %>, subDetail<%= SnakeFormatHump(SourceTable.Name, true) %><% } %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
-
-const { proxy } = getCurrentInstance()
 <% if(dicts.Count != 0) { %>
-
-// 注入字典数据
-<% for(int i = 0; i < dicts.Count; i++) { %>
-const <%= dicts[i] %> = inject('<%= dicts[i] %>', () => [])
+import { useHandleDict } from './js/useHandleDict.js'
 <% } %>
+<%
+// 字典 js变量 js方法参数 处理
+string dictsDot = "";
+string dictsArgs = "";
+for(int i = 0; i < dicts.Count; i++)
+{
+    if(i != dicts.Count - 1){
+        dictsDot += dicts[i] + ", ";
+        dictsArgs += "'" + dicts[i] + "'" + ", ";
+    } else {
+        dictsDot += dicts[i];
+        dictsArgs += "'" + dicts[i] + "'";
+    }
+}
+%>
+
+/** @type {import('vue').ComponentInternalInstance} */
+const instance = getCurrentInstance()
+const proxy = instance.proxy
+<% if(dicts.Count != 0) { %>
+const { getDictData, <%= dictsDot %> } = useHandleDict()
 <% } %>
 
-/**@type {import('vue').Ref<{row: import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %> | Object}>} */
+/** @type {import('vue').Ref<{row: import('@/api/<%= SnakeFormatHump(SourceTable.Name) %>').<%= SnakeFormatHump(SourceTable.Name, true) %> | Object}>} */
 const form = ref(form: {
     row: {},
 })
 
-/**@type {import('vue').Ref<Boolean>} */
+/** @type {import('vue').Ref<Boolean>} */
 const open = ref(false)
 
-/**@type {import('vue').Ref<String>} */
+/** @type {import('vue').Ref<String>} */
 const title = ref('')
 
 /** 表单重置 */
@@ -369,6 +385,9 @@ function reset() {
  */
 async function handleDetail(row) {
     reset()
+    <% if(dicts.Count != 0) { %>
+    getDictData()
+    <% } %>
     <% if(subTableName != "") { %>
     getSubTableDetail(row.id)
     <% } %>

@@ -304,7 +304,7 @@ foreach(string fieldName in subFieldNames) {
                 <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
                 <u-radio label="请手动写入选项 或者 选择字典生成" name="1"></u-radio>
                 <% } else { %>
-                <u-radio v-for="dict in <%= ExtSubTableInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :name="dict.value"></u-radio>
+                <u-radio v-for="dict in dictType['<%= ExtSubTableInfo[fieldName]["dict"] %>']" :key="dict.value" :label="dict.label" :name="dict.value"></u-radio>
                 <% } %>
               </u-radio-group>
               <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox") { %>
@@ -313,7 +313,7 @@ foreach(string fieldName in subFieldNames) {
                 <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
                 <u-checkbox label="请手动写入选项 或者 选择字典生成" name="1"></u-checkbox>
                 <% } else { %>
-                <u-checkbox v-for="dict in <%= ExtSubTableInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :name="dict.value"></u-checkbox>
+                <u-checkbox v-for="dict in dictType['<%= ExtSubTableInfo[fieldName]["dict"] %>']" :key="dict.value" :label="dict.label" :name="dict.value"></u-checkbox>
                 <% } %>
               </u-checkbox-group>
               <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "datetime") { %>
@@ -346,7 +346,7 @@ foreach(string fieldName in subFieldNames) {
       </scroll-view>
       <view class="btn-box u-p-20">
         <u-button text="取消" shape="circle" @click="handleClose"></u-button>
-        <u-button type="primary" text="确定" shape="circle" @click="submit"></u-button>
+        <u-button type="primary" text="确定" shape="circle" @click="$u.debounce(submit)"></u-button>
       </view>
     </u-popup>
     <!-- 模态框 -->
@@ -356,11 +356,12 @@ foreach(string fieldName in subFieldNames) {
 
 <script>
 import { cloneDeep } from 'lodash-es'
+import dictMinxin from '@/mixins/dict.js'
 import { subDetail<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>.js'
 
 export default {
   name: '<%= SnakeFormatHump(SourceTable.Name, true) %>EditSubTable',
-  inject: ['dictType'],
+  mixins: [dictMinxin],
   props: {
     rowId: {
       type: Number,
@@ -430,6 +431,14 @@ export default {
   },
   methods: {
     /**
+     * 字典数据获取
+     */
+    getDictData() {
+      <% for(int i = 0; i < dicts.Count; i++) { %>
+      this.getDict('<%= dicts[i] %>')
+      <% } %>
+    },
+    /**
      * 获取子表数据
      * @param {Number} id
      */
@@ -470,6 +479,7 @@ export default {
      * 添加操作
      */
     handleAdd() {
+      this.getDictData()
       this.show = true
       this.title = '添加明细'
       this.editRowIndex = -1
@@ -538,6 +548,9 @@ export default {
       <%-- 多选 数组类型 --%>
       <% if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "imageUpload" || (string)ExtSubTableInfo[fieldName]["display"] == "imageUploadMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "fileUpload" || (string)ExtSubTableInfo[fieldName]["display"] == "fileUploadMultiple") { %>
       this.form.<%= fieldName %> = []
+      <%-- 数字类型 --%>
+      <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "inputNumber") { %>
+      this.form.<%= fieldName %> = 0
       <% } else { %>
       this.form.<%= fieldName %> = null
       <% } %>

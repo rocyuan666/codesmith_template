@@ -202,7 +202,7 @@ foreach(string fieldName in subFieldNames) {
                 <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
                 <u-radio label="请手动写入选项 或者 选择字典生成" name="1"></u-radio>
                 <% } else { %>
-                <u-radio v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :name="dict.value"></u-radio>
+                <u-radio v-for="dict in dictType['<%= ExtInfo[fieldName]["dict"] %>']" :key="dict.value" :label="dict.label" :name="dict.value"></u-radio>
                 <% } %>
               </u-radio-group>
               <% } else if((string)ExtInfo[fieldName]["display"] == "checkbox") { %>
@@ -211,7 +211,7 @@ foreach(string fieldName in subFieldNames) {
                 <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
                 <u-checkbox label="请手动写入选项 或者 选择字典生成" name="1"></u-checkbox>
                 <% } else { %>
-                <u-checkbox v-for="dict in <%= ExtInfo[fieldName]["dict"] %>" :key="dict.value" :label="dict.label" :name="dict.value"></u-checkbox>
+                <u-checkbox v-for="dict in dictType['<%= ExtInfo[fieldName]["dict"] %>']" :key="dict.value" :label="dict.label" :name="dict.value"></u-checkbox>
                 <% } %>
               </u-checkbox-group>
               <% } else if((string)ExtInfo[fieldName]["display"] == "datetime") { %>
@@ -247,7 +247,7 @@ foreach(string fieldName in subFieldNames) {
       </scroll-view>
       <view class="btn-box u-p-20">
         <u-button text="取消" shape="circle" @click="handleClose"></u-button>
-        <u-button type="primary" text="确定" shape="circle" @click="submit"></u-button>
+        <u-button type="primary" text="确定" shape="circle" :disabled="submitDisabled" @click="$u.debounce(submit)"></u-button>
       </view>
     </u-popup>
   </view>
@@ -255,6 +255,7 @@ foreach(string fieldName in subFieldNames) {
 
 <script>
 import { cloneDeep } from 'lodash-es'
+import dictMinxin from '@/mixins/dict.js'
 import { add<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>.js'
 <% if(subTableName != "") { %>
 import AddSubTable from './addSubTable.vue'
@@ -262,12 +263,13 @@ import AddSubTable from './addSubTable.vue'
 
 export default {
   name: '<%= SnakeFormatHump(SourceTable.Name, true) %>Add',
-  inject: ['dictType'],
+  mixins: [dictMinxin],
   <% if(subTableName != "") { %>
   components: { AddSubTable },
   <% } %>
   data() {
     return {
+      submitDisabled: false,
       show: false,
       form: {
         row: {
@@ -338,12 +340,21 @@ export default {
   },
   methods: {
     /**
+     * 字典数据获取
+     */
+    getDictData() {
+      <% for(int i = 0; i < dicts.Count; i++) { %>
+      this.getDict('<%= dicts[i] %>')
+      <% } %>
+    },
+    /**
      * 提交表单
      */
     submit() {
       this.$refs['formRef']
         .validate()
         .then(res => {
+          this.submitDisabled = true
           const _form = cloneDeep(this.form)
           <%--
               主表：多选 数组格式 转换","分割字符串 & 系数处理
@@ -391,11 +402,15 @@ export default {
           _form.row['row_details'] = row_details
           <% } %>
           <% } %>
-          add<%= SnakeFormatHump(SourceTable.Name, true) %>(_form).then(() => {
-            this.$u.toast('新增成功')
-            this.handleClose()
-            this.$emit('updateList')
-          })
+          add<%= SnakeFormatHump(SourceTable.Name, true) %>(_form)
+            .then(() => {
+              this.$u.toast('新增成功')
+              this.submitDisabled = false
+              this.handleClose()
+              this.$emit('updateList')
+            }).catch(() => {
+              this.submitDisabled = false
+            })
         })
         .catch(err => {
           console.log('表单错误信息：', err)
@@ -423,6 +438,9 @@ export default {
       <%-- 多选 数组类型 --%>
       <% if((string)ExtInfo[fieldName]["display"] == "checkbox" || (string)ExtInfo[fieldName]["display"] == "selectMultiple" || (string)ExtInfo[fieldName]["display"] == "imageUpload" || (string)ExtInfo[fieldName]["display"] == "imageUploadMultiple" || (string)ExtInfo[fieldName]["display"] == "fileUpload" || (string)ExtInfo[fieldName]["display"] == "fileUploadMultiple") { %>
       this.form.row.<%= fieldName %> = []
+      <%-- 数字类型 --%>
+      <% } else if((string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
+      this.form.row.<%= fieldName %> = 0
       <% } else { %>
       this.form.row.<%= fieldName %> = null
       <% } %>
@@ -433,6 +451,7 @@ export default {
      * 打开弹窗
      */
     handleOpen() {
+      this.getDictData()
       this.show = true
     },
     /**

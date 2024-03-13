@@ -353,7 +353,7 @@ foreach(string fieldName in subFieldNames) {
 
 <script setup name="<%= SnakeFormatHump(SourceTable.Name, true) %>Add">
 import { ref, getCurrentInstance, inject } from 'vue'
-import { cloneDeep, debounce } from 'lodash-es'
+import { cloneDeep } from 'lodash-es'
 import { add<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>'
 <% if(dicts.Count != 0) { %>
 import { useHandleDict } from './js/useHandleDict.js'
@@ -435,7 +435,7 @@ const emit = defineEmits(['updateList'])
 
 const submitDisabled = ref(false)
 /** 提交按钮 */
-const submitForm = debounce(function () {
+const submitForm = proxy.debounce(function () {
     proxy.$refs['<%= SnakeFormatHump(SourceTable.Name) %>Ref'].validate((valid) => {
         if (valid) {
             submitDisabled.value = true
@@ -491,7 +491,7 @@ const submitForm = debounce(function () {
             <% } %>
             add<%= SnakeFormatHump(SourceTable.Name, true) %>(_form)
             .then(() => {
-                proxy.$modal.msgSuccess('新增成功')
+                proxy.$modal.msgSuccess('添加成功')
                 open.value = false
                 submitDisabled.value = false
                 emit('updateList')
@@ -544,7 +544,7 @@ function reset() {
     proxy.resetForm('<%= SnakeFormatHump(SourceTable.Name) %>Ref')
 }
 
-/** 新增按钮操作 */
+/** 添加按钮操作 */
 function handleAdd() {
     reset()
     <% if(dicts.Count != 0) { %>

@@ -29,7 +29,7 @@ import ActionResult from '@/utils/ActionResult'
 /**
  * @typedef <%= SnakeFormatHump(SourceTable.Name, true) %> - <%= SourceTable.Description %>
  <% for(int i = 0; i < SourceTable.Columns.Count; i++) { %>
- * @property {<%= MysqlTypeToJsType(SourceTable.Columns[i].NativeType) %>} <%= SourceTable.Columns[i].Name %> - <%= ExtInfo[SourceTable.Columns[i].Name]["label"] %>
+ * @property {<%= MysqlTypeToJsType(SourceTable.Columns[i].NativeType) %>} [<%= SourceTable.Columns[i].Name %>] - <%= ExtInfo[SourceTable.Columns[i].Name]["label"] %>
  <% } %>
  */
 

@@ -1,10 +1,9 @@
 ﻿<%@ Template Language="C#" TargetLanguage="Text" Description="入口文件" %>
 <%@ Assembly Name="SchemaExplorer" %>
-<%@ Assembly Name="System.Net.Http" %>
 <%@ Import Namespace="SchemaExplorer" %>
 <%@ Import Namespace="System.IO" %>
 <%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
-<%@ Import Namespace="System.Net.Http" %>
+<%@ Import Namespace="System.Net" %>
 
 <%@ Property Name="Tables" Type="SchemaExplorer.TableSchemaCollection" Category="Context" Optional="False" Description="要生成代码的表集合" %>
 <%@ Property Name="RootNameSpace" Type="System.String" Default="xxx项目" Optional="False" Category="General" Description="项目名称" %>
@@ -23,10 +22,12 @@ JObject json = JObject.Parse(File.ReadAllText(JsonFile));
 <%
 #region 网络请求，获取额外需要的json数据
 
-HttpClient httpClient = new HttpClient();
-HttpResponseMessage res = httpClient.GetAsync(ApiBaseUrl + "/api/ConfigTableColumn/tableInfo").Result;
-JObject resJson = JObject.Parse(res.Content.ReadAsStringAsync().Result);
+WebClient webClient = new WebClient();
+byte[] bytes = webClient.DownloadData(ApiBaseUrl + "/api/ConfigTableColumn/tableInfo");
+string res = Encoding.UTF8.GetString(bytes);
+JObject resJson = JObject.Parse(res);
 JToken json = resJson["data"];
+Response.WriteLine(json.Count() + " 张表");
 
 #endregion
 
@@ -133,33 +134,33 @@ for(int i = 0; i < Tables.Count; i++)
     // RenderFileUsingProperties(vue3DetailDirectory, true, ref vue3DetailTemplate, Tables[i], extTableJson);
     
     // uniapp - api
-    string uniappApiDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\api\\" + SnakeFormatHump(Tables[i].Name) + ".js";
+    string uniappApiDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\api\\sys\\" + SnakeFormatHump(Tables[i].Name) + ".js";
     RenderFileUsingProperties(uniappApiDirectory, true, ref uniappApiTemplate, Tables[i], extTableJson);
     
     // uniapp - 列表
-    string uniappIndexDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\" + SnakeFormatHump(Tables[i].Name) + "\\" + SnakeFormatHump(Tables[i].Name) + ".vue";
+    string uniappIndexDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\sys\\" + SnakeFormatHump(Tables[i].Name) + "\\" + SnakeFormatHump(Tables[i].Name) + ".vue";
     RenderFileUsingProperties(uniappIndexDirectory, true, ref uniappIndexTemplate, Tables[i], extTableJson);
     
     // uniapp - 添加
-    string uniappAddDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\add.vue";
+    string uniappAddDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\sys\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\add.vue";
     RenderFileUsingProperties(uniappAddDirectory, true, ref uniappAddTemplate, Tables[i], extTableJson);
     
     // uniapp - 编辑
-    string uniappEditDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\edit.vue";
+    string uniappEditDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\sys\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\edit.vue";
     RenderFileUsingProperties(uniappEditDirectory, true, ref uniappEditTemplate, Tables[i], extTableJson);
     
     // uniapp - 子表
     if(subTableName != "") {
         // 列表
-        string uniappSubTableDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\subTable.vue";
+        string uniappSubTableDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\sys\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\subTable.vue";
         RenderFileUsingProperties(uniappSubTableDirectory, true, ref uniappSubTableTemplate, Tables[i], extTableJson);
       
         // 添加
-        string uniappAddSubTableDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\addSubTable.vue";
+        string uniappAddSubTableDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\sys\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\addSubTable.vue";
         RenderFileUsingProperties(uniappAddSubTableDirectory, true, ref uniappAddSubTableTemplate, Tables[i], extTableJson);
       
         // 编辑
-        string uniappEditSubTableDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\editSubTable.vue";
+        string uniappEditSubTableDirectory = OutputDirectory + "\\" + RootNameSpace + "\\uniapp\\pages\\sys\\" + SnakeFormatHump(Tables[i].Name) + "\\components\\editSubTable.vue";
         RenderFileUsingProperties(uniappEditSubTableDirectory, true, ref uniappEditSubTableTemplate, Tables[i], extTableJson);
     }
     

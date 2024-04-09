@@ -56,9 +56,8 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
 
 #region 字典标识收集 去除重复字典标识用作js变量
 
-List<string> dicts = new List<string>();
-
 // 主表字典处理
+List<string> dicts = new List<string>();
 for(int i = 0; i < SourceTable.Columns.Count; i++)
 {
     string fieldName = SourceTable.Columns[i].Name;
@@ -73,7 +72,9 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
         }
     }
 }
+
 // 子表字典处理
+List<string> dictsSub = new List<string>();
 if(subTableName != "")
 {
     foreach(string fieldName in subFieldNames)
@@ -82,9 +83,9 @@ if(subTableName != "")
         {
             if((string)ExtSubTableInfo[fieldName]["display"] == "select" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "radio" || (string)ExtSubTableInfo[fieldName]["display"] == "checkbox")
         {
-            if(!dicts.Contains((string)ExtSubTableInfo[fieldName]["dict"]))
+            if(!dictsSub.Contains((string)ExtSubTableInfo[fieldName]["dict"]))
             {
-                dicts.Add((string)ExtSubTableInfo[fieldName]["dict"]);
+                dictsSub.Add((string)ExtSubTableInfo[fieldName]["dict"]);
             }
         }
         }
@@ -123,7 +124,60 @@ if(subTableName != "")
                   label = label + "(" + unit + ")";
               }
           %>
+          <%-- 判断字段对应的表单类型 --%>
+          <% if((string)ExtInfo[fieldName]["display"] == "input") { %>
+          <%-- 文本框 --%>
           <uni-th align="center"><%= label %></uni-th>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
+          <%-- 数字框 --%>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "textarea") { %>
+          <%-- 文本域 --%>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "select") { %>
+          <%-- 下拉框 --%>
+          <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } else { %>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } %>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "selectMultiple") { %>
+          <%-- 下拉框（多选） --%>
+          <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } else { %>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } %>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "radio") { %>
+          <%-- 单选框 --%>
+          <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } else { %>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } %>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "checkbox") { %>
+          <%-- 复选框 --%>
+          <% if((string)ExtInfo[fieldName]["dict"] == "" || (string)ExtInfo[fieldName]["dict"] == "0") { %>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } else { %>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } %>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "datetime") { %>
+          <%-- 日期时间 --%>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "date") { %>
+          <%-- 日期 --%>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "imageUpload") { %>
+          <%-- 图片上传 --%>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "imageUploadMultiple") { %>
+          <%-- 图片上传（多） --%>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "0" || (string)ExtInfo[fieldName]["display"] == "") { %>
+          <%-- 为空直接展示 --%>
+          <uni-th align="center"><%= label %></uni-th>
+          <% } %>
           <% } %>
           <% } %>
           <%-- 是否有 子表 --%>
@@ -198,7 +252,7 @@ if(subTableName != "")
           <uni-td align="center">
             <u-album
               style="display: inline-block; margin-top: 4px;"
-              :urls="row.<%= fieldName %>"
+              :urls="row.<%= fieldName %>.map(url => `${getBaseUrl()}${url}`)"
               :maxCount="1"
               :singleSize="40"
               :multipleSize="40"
@@ -209,7 +263,7 @@ if(subTableName != "")
           <uni-td align="center">
             <u-album
               style="display: inline-block; margin-top: 4px;"
-              :urls="row.<%= fieldName %>"
+              :urls="row.<%= fieldName %>.map(url => `${getBaseUrl()}${url}`)"
               :maxCount="1"
               :singleSize="40"
               :multipleSize="40"
@@ -253,11 +307,11 @@ if(subTableName != "")
             <view class="area2">{{ row.id }}</view>
           </view>
           <view class="center">
-            <view class="area3">id：{{ row.id }}</view>
+            <view class="area3"><text class="list-area-title">id：</text>{{ row.id }}</view>
           </view>
           <view class="bottom">
-            <view class="area4">创建时间：{{ row.create_time }}</view>
-            <view class="area4">修改时间：{{ row.update_time }}</view>
+            <view class="area4"><text class="list-area-title">创建时间：</text>{{ row.create_time }}</view>
+            <view class="area4"><text class="list-area-title">修改时间：</text>{{ row.update_time }}</view>
           </view>
           <%-- 是否有 子表 --%>
           <% if(subTableName != "") { %>
@@ -408,8 +462,8 @@ if(subTableName != "")
 
 <script>
 import { cloneDeep } from 'lodash-es'
-import { list<%= SnakeFormatHump(SourceTable.Name, true) %>, del<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>.js'
-import dictMinxin from '@/mixins/dict.js'
+import { list<%= SnakeFormatHump(SourceTable.Name, true) %>, del<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/sys/<%= SnakeFormatHump(SourceTable.Name) %>.js'
+import dictMixin from '@/mixins/dict.js'
 import Add from './components/add.vue'
 import Edit from './components/edit.vue'
 <% if(subTableName != "") { %>
@@ -417,7 +471,7 @@ import SubTable from './components/subTable.vue'
 <% } %>
 
 export default {
-  mixins: [dictMinxin],
+  mixins: [dictMixin],
   components: {
     Add,
     Edit,

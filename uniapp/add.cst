@@ -74,9 +74,8 @@ foreach(string fieldName in subFieldNames) {
 
 #region 字典标识收集 去除重复字典标识用作js变量
 
-List<string> dicts = new List<string>();
-
 // 主表字典处理
+List<string> dicts = new List<string>();
 for(int i = 0; i < SourceTable.Columns.Count; i++)
 {
     string fieldName = SourceTable.Columns[i].Name;
@@ -91,7 +90,9 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
         }
     }
 }
+
 // 子表字典处理
+List<string> dictsSub = new List<string>();
 if(subTableName != "")
 {
     foreach(string fieldName in subFieldNames)
@@ -100,9 +101,9 @@ if(subTableName != "")
         {
             if((string)ExtSubTableInfo[fieldName]["display"] == "select" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "radio" || (string)ExtSubTableInfo[fieldName]["display"] == "checkbox")
         {
-            if(!dicts.Contains((string)ExtSubTableInfo[fieldName]["dict"]))
+            if(!dictsSub.Contains((string)ExtSubTableInfo[fieldName]["dict"]))
             {
-                dicts.Add((string)ExtSubTableInfo[fieldName]["dict"]);
+                dictsSub.Add((string)ExtSubTableInfo[fieldName]["dict"]);
             }
         }
         }
@@ -255,15 +256,15 @@ foreach(string fieldName in subFieldNames) {
 
 <script>
 import { cloneDeep } from 'lodash-es'
-import dictMinxin from '@/mixins/dict.js'
-import { add<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>.js'
+import dictMixin from '@/mixins/dict.js'
+import { add<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/sys/<%= SnakeFormatHump(SourceTable.Name) %>.js'
 <% if(subTableName != "") { %>
 import AddSubTable from './addSubTable.vue'
 <% } %>
 
 export default {
   name: '<%= SnakeFormatHump(SourceTable.Name, true) %>Add',
-  mixins: [dictMinxin],
+  mixins: [dictMixin],
   <% if(subTableName != "") { %>
   components: { AddSubTable },
   <% } %>
@@ -290,6 +291,9 @@ export default {
           <%-- 多选 数组类型 --%>
           <% if((string)ExtInfo[fieldName]["display"] == "checkbox" || (string)ExtInfo[fieldName]["display"] == "selectMultiple" || (string)ExtInfo[fieldName]["display"] == "imageUpload" || (string)ExtInfo[fieldName]["display"] == "imageUploadMultiple" || (string)ExtInfo[fieldName]["display"] == "fileUpload" || (string)ExtInfo[fieldName]["display"] == "fileUploadMultiple") { %>
           <%= fieldName %>: [],
+          <%-- 数字类型 --%>
+          <% } else if((string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
+          <%= fieldName %>: 0,
           <% } else { %>
           <%= fieldName %>: null,
           <% } %>

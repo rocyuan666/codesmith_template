@@ -56,9 +56,8 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
 
 #region 字典标识收集 去除重复字典标识用作js变量
 
-List<string> dicts = new List<string>();
-
 // 主表字典处理
+List<string> dicts = new List<string>();
 for(int i = 0; i < SourceTable.Columns.Count; i++)
 {
     string fieldName = SourceTable.Columns[i].Name;
@@ -73,7 +72,9 @@ for(int i = 0; i < SourceTable.Columns.Count; i++)
         }
     }
 }
+
 // 子表字典处理
+List<string> dictsSub = new List<string>();
 if(subTableName != "")
 {
     foreach(string fieldName in subFieldNames)
@@ -82,9 +83,9 @@ if(subTableName != "")
         {
             if((string)ExtSubTableInfo[fieldName]["display"] == "select" || (string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple" || (string)ExtSubTableInfo[fieldName]["display"] == "radio" || (string)ExtSubTableInfo[fieldName]["display"] == "checkbox")
         {
-            if(!dicts.Contains((string)ExtSubTableInfo[fieldName]["dict"]))
+            if(!dictsSub.Contains((string)ExtSubTableInfo[fieldName]["dict"]))
             {
-                dicts.Add((string)ExtSubTableInfo[fieldName]["dict"]);
+                dictsSub.Add((string)ExtSubTableInfo[fieldName]["dict"]);
             }
         }
         }
@@ -116,7 +117,60 @@ if(subTableName != "")
                     subTableLabel = subTableLabel + "(" + subTableUnit + ")";
                 }
             %>
+            <%-- 判断字段对应的表单类型 --%>
+            <% if((string)ExtSubTableInfo[fieldName]["display"] == "input") { %>
+            <%-- 文本框 --%>
             <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "inputNumber") { %>
+            <%-- 数字框 --%>
+            <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "textarea") { %>
+            <%-- 文本域 --%>
+            <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "select") { %>
+            <%-- 下拉框 --%>
+            <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+            <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } else { %>
+            <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } %>
+            <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "selectMultiple") { %>
+            <%-- 下拉框（多选） --%>
+            <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+            <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } else { %>
+            <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } %>
+            <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "radio") { %>
+            <%-- 单选框 --%>
+            <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+            <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } else { %>
+            <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } %>
+            <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "checkbox") { %>
+            <%-- 复选框 --%>
+            <% if((string)ExtSubTableInfo[fieldName]["dict"] == "" || (string)ExtSubTableInfo[fieldName]["dict"] == "0") { %>
+            <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } else { %>
+            <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } %>
+            <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "datetime") { %>
+            <%-- 日期时间 --%>
+            <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "date") { %>
+            <%-- 日期 --%>
+            <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "imageUpload") { %>
+            <%-- 图片上传 --%>
+            <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "imageUploadMultiple") { %>
+            <%-- 图片上传（多） --%>
+            <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "0" || (string)ExtSubTableInfo[fieldName]["display"] == "") { %>
+            <%-- 为空直接展示 --%>
+            <uni-th align="center"><%= subTableLabel %></uni-th>
+            <% } %>
             <% } %>
             <% } %>
           </uni-tr>
@@ -174,7 +228,7 @@ if(subTableName != "")
             <uni-td align="center">
               <u-album
                 style="display: inline-block; margin-top: 4px;"
-                :urls="row.<%= fieldName %>"
+                :urls="row.<%= fieldName %>.map(url => `${getBaseUrl()}${url}`)"
                 :maxCount="1"
                 :singleSize="40"
                 :multipleSize="40"
@@ -185,7 +239,7 @@ if(subTableName != "")
             <uni-td align="center">
               <u-album
                 style="display: inline-block; margin-top: 4px;"
-                :urls="row.<%= fieldName %>"
+                :urls="row.<%= fieldName %>.map(url => `${getBaseUrl()}${url}`)"
                 :maxCount="1"
                 :singleSize="40"
                 :multipleSize="40"
@@ -208,12 +262,12 @@ if(subTableName != "")
 
 <script>
 import { cloneDeep } from 'lodash-es'
-import dictMinxin from '@/mixins/dict.js'
-import { subDetail<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/<%= SnakeFormatHump(SourceTable.Name) %>.js'
+import dictMixin from '@/mixins/dict.js'
+import { subDetail<%= SnakeFormatHump(SourceTable.Name, true) %> } from '@/api/sys/<%= SnakeFormatHump(SourceTable.Name) %>.js'
 
 export default {
   name: '<%= SnakeFormatHump(SourceTable.Name, true) %>SubTable',
-  mixins: [dictMinxin],
+  mixins: [dictMixin],
   data() {
     return {
       show: false,
@@ -227,8 +281,8 @@ export default {
      * 字典数据获取
      */
     getDictData() {
-      <% for(int i = 0; i < dicts.Count; i++) { %>
-      this.getDict('<%= dicts[i] %>')
+      <% for(int i = 0; i < dictsSub.Count; i++) { %>
+      this.getDict('<%= dictsSub[i] %>')
       <% } %>
     },
     /**

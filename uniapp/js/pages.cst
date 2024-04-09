@@ -24,7 +24,7 @@ const menuDataList = [
       {
         title: '<%= Tables[i].Description == "" ? SnakeFormatHump(Tables[i].Name) : Tables[i].Description %>',
         icon: 'file-alt',
-        url: '/pages/<%= SnakeFormatHump(Tables[i].Name) %>/<%= SnakeFormatHump(Tables[i].Name) %>',
+        url: '/pages/sys/<%= SnakeFormatHump(Tables[i].Name) %>/<%= SnakeFormatHump(Tables[i].Name) %>',
         permissions: ['<%= SnakeFormatHump(Tables[i].Name, true) %>.list'],
       },
       <% } %>
@@ -36,7 +36,7 @@ const menuDataList = [
 const pages = [
   <% for(int i = 0; i < Tables.Count; i++) { %>
   {
-    "path": "pages/<%= SnakeFormatHump(Tables[i].Name) %>/<%= SnakeFormatHump(Tables[i].Name) %>",
+    "path": "pages/sys/<%= SnakeFormatHump(Tables[i].Name) %>/<%= SnakeFormatHump(Tables[i].Name) %>",
     "style": {
       "navigationBarTitleText": "<%= Tables[i].Description == "" ? SnakeFormatHump(Tables[i].Name) : Tables[i].Description %>",
       "enablePullDownRefresh": true

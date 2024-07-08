@@ -482,7 +482,6 @@ export default {
   },
   created() {
     this.getDictData()
-    this.getList(this.rowId)
   },
   mounted() {
     this.$refs['formRef'] && this.$refs['formRef'].setRules(this.rules)

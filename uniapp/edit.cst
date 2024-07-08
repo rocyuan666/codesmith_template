@@ -459,6 +459,9 @@ export default {
      */
     handleOpen(row) {
       this.getDictData()
+      <% if(subTableName != "") { %>
+          this.$refs['subTableRef'].getList(row.id)
+      <% } %>
       this.show = true
       this.form.row.id = row.id
       <%-- 循环字段 --%>

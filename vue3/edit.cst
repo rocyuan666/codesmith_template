@@ -532,7 +532,7 @@ function reset() {
         <% } else if((string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
         <%= fieldName %>: 0,
         <% } else { %>
-        <%= fieldName %>: null,
+        <%= fieldName %>: '',
         <% } %>
         <% } %>
         <% } %>
@@ -598,7 +598,7 @@ const formSubTable = {
     <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "inputNumber") { %>
     <%= fieldName %>: 0,
     <% } else { %>
-    <%= fieldName %>: null,
+    <%= fieldName %>: '',
     <% } %>
     <% } %>
     <% } %>

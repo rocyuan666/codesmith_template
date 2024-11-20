@@ -566,7 +566,7 @@ export default {
       <% } else if((string)ExtSubTableInfo[fieldName]["display"] == "inputNumber") { %>
       this.form.<%= fieldName %> = 0
       <% } else { %>
-      this.form.<%= fieldName %> = null
+      this.form.<%= fieldName %> = ''
       <% } %>
       <% } %>
       <% } %>

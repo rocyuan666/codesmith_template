@@ -448,7 +448,7 @@ export default {
       <% } else if((string)ExtInfo[fieldName]["display"] == "inputNumber") { %>
       this.form.row.<%= fieldName %> = 0
       <% } else { %>
-      this.form.row.<%= fieldName %> = null
+      this.form.row.<%= fieldName %> = ''
       <% } %>
       <% } %>
       <% } %>
